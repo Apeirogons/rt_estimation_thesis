@@ -1,3 +1,4 @@
+# %%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -62,7 +63,7 @@ if 'China' in countries_of_interest:
 if not os.path.exists('new_case_and_mobility'):
     os.mkdir('new_case_and_mobility')
 
-N=5
+N=7
 target_0 = 'new_cases_per_million'
 target_1 = 'transit_stations_percent_change_from_baseline'
 
@@ -97,7 +98,7 @@ if 'China' in countries_of_interest:
 if not os.path.exists('mobility_types'):
     os.mkdir('mobility_types')
 
-N = 5
+
 
 targets = ['retail_and_recreation_percent_change_from_baseline', 'grocery_and_pharmacy_percent_change_from_baseline', 'parks_percent_change_from_baseline', 'transit_stations_percent_change_from_baseline', 'workplaces_percent_change_from_baseline', 'residential_percent_change_from_baseline']
 
