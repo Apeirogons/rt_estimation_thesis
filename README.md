@@ -1,6 +1,8 @@
 # COVID-math-thesis
-Repository for code relating to my HTHSCI 4R09 thesis project, likely related to COVID and dimensionality reduction.
+Repository for code relating to my HTHSCI 4R09 thesis project, related to epidemic timeseries.
 
-visualizations contains the updated resources for exploring types of data. In particular, I primarily explored data from Google Mobility and the European Centre for Disease Prevention and Control.
-time-lag-patient-level utilizes open-source patient-level data to determine time lags
-time-lag-population-regression is an experiment in determining the time lags from population level time series, but it doesn't work too well in most cases.
+epidemic_timeseries contains all the mobility PCA, timeseries clustering, and phase planes. It's ready to run: Linux users should just type $make, and if you can't do that, just download the appropriate files (link in the Makefile) and run all the python scripts.
+
+shifts contains code for the R(t) estimation idea. It's still very WIP right at the moment, and is a complete mess. I will fix it up during this coming week.
+
+time_lag_old contains depreciated code. One idea was to determine the time lag distribution from a sort of deconvolution-based method (There are probably better methods than the crude one I came up with there), while another idea was to use publicly available patient-level data to come up with key epidemiological lags, which seemed like an okay approach.
