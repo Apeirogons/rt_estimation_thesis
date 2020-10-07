@@ -1,6 +1,6 @@
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
-
+# %%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -72,7 +72,7 @@ for key in list(country_splitted_data.keys()):
 
 # %%
 from random import sample
-splitted_i = np.asarray(sample(list(range(len(all_splitted_data))), 40))
+splitted_i = np.asarray(sample(list(range(len(all_splitted_data))), 60))
 all_splitted_data = np.asarray(all_splitted_data)[splitted_i]
 randomized_keys = [utilized_keys[i] for i in splitted_i]
 randomized_keys
