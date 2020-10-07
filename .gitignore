@@ -1,6 +1,9 @@
 epidemic_timeseries/outputs/
 time_lag_old/time-lag-population-regression/no-rolling
+shifts/figures/
 *.out
 *.pyc
 shifts/.Rhistory
+shifts/.RData
 epidemic_timeseries/data/Global_Mobility_Report.csv
+
