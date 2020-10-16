@@ -22,7 +22,7 @@ seir = function(t, conditions, parms){
 
   return (list(c(dSdt, dEdt, dIdt, dRdt)))}
 
-simulate_seir = function(t, conditions, b, gamma, mu){
+simulate_seir = function(t, conditions, b, gamma, mu,save_serial = TRUE){
   beta_t = c()
   for (t0 in t){
     beta_t = append(beta_t, b(t0))
@@ -43,8 +43,13 @@ simulate_seir = function(t, conditions, b, gamma, mu){
   # sd of Gamma: sqrt(shape*scale**2)
   mean_gamma = 1/gamma
   sd_gamma = sqrt((1/gamma)**2)
-  dist_to_infectious = discr_si(c(0:25), mean_gamma, sd_gamma)
-
+  indices = c(0:25)
+  dist_to_infectious = discr_si(indices, mean_gamma, sd_gamma)
+  
+  if (save_serial){
+    df = data.frame('index' = indices, 'si' = dist_to_infectious)
+    write.csv(df, 'serial_interval.csv', row.names=FALSE)
+  }
   Rt_case = convolve(seir_outputs$Rt, dist_to_infectious, type='filter')
   Rt_case = c(Rt_case, NA* c(1:(length(dist_to_infectious)-1)))
   seir_outputs$Rt_case = Rt_case

@@ -1,0 +1,21 @@
+﻿Data source name,Region,URL,Description
+ECDC,All countries,https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide,New cases and cumulative cases per 100000 for each  country
+WHO ,All countries,https://covid19.who.int/region/euro/country/it,"New cases, cumulative cases, new deaths, cumulative deaths"
+Johns Hopkins University,Various,https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv,"New cases, cumulative cases, new deaths, cumulative deaths, and more. Compilation of case datasets"
+Kaggle,All countries,https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset,
+SciNet,,https://mponce0.github.io/covid19.analytics/,R package for COVID-19 time series
+University of Washington,Various,https://github.com/beoutbreakprepared/nCoV2019,Patient-level data. I used this dataset for time-lags.
+Our World in Data,All countries,https://github.com/owid/covid-19-data/tree/master/public/data,Compilation of ECDC data plus testing info
+UofT,,https://github.com/ishaberry/Covid19Canada,Province/region-level Canadian data
+CIHI,,https://resources-covid19canada.hub.arcgis.com/,
+France,"France, various regions",https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/,
+Germany,Germany,https://github.com/jgehrcke/covid-19-germany-gae,
+Spain,Spain,https://github.com/datadista/datasets/tree/master/COVID%2019,
+UofW,US,https://github.com/COVID19StatePolicy/SocialDistancing,Social distancing policies in the US
+CDC,US,https://data.cdc.gov/Case-Surveillance/COVID-19-Case-Surveillance-Public-Use-Data/vbim-akqf,
+Google Mobility,All countries,https://www.google.com/covid19/mobility/,Mobility data available down to to the neighborhood level
+,,,
+,,,
+,,,
+,,,
+Most datasets found in UofT libraries,https://mdl.library.utoronto.ca/covid-19/data,,
