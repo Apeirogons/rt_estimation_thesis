@@ -37,10 +37,7 @@ simulate_seir = function(t, conditions, b, gamma, mu,save_serial = TRUE){
   seir_outputs$Rt = beta_t / mu * seir_outputs$S/N_t
   seir_outputs$beta = beta_t
   
-  # EpiEstim::discr_si computes descrete GI/SI for gamma-distribution, but exponential distribution is a special case of gamma
-  # with shape = 1, rate = L
-  # mean of Gamma: shape*scale
-  # sd of Gamma: sqrt(shape*scale**2)
+  
   mean_gamma = 1/gamma
   sd_gamma = sqrt((1/gamma)**2)
   indices = c(0:25)
@@ -50,8 +47,14 @@ simulate_seir = function(t, conditions, b, gamma, mu,save_serial = TRUE){
     df = data.frame('index' = indices, 'si' = dist_to_infectious)
     write.csv(df, 'serial_interval.csv', row.names=FALSE)
   }
-  Rt_case = convolve(seir_outputs$Rt, dist_to_infectious, type='filter')
-  Rt_case = c(Rt_case, NA* c(1:(length(dist_to_infectious)-1)))
+  
+  mean_generation = 1/gamma + 1/mu
+  sd_generation = sqrt(1/gamma**2 + 1/mu**2)
+  indices= c(0:50)
+  gen_int =  discr_si(indices, mean_generation, sd_generation)
+  
+  Rt_case = convolve(seir_outputs$Rt, gen_int, type='filter')
+  Rt_case = c(Rt_case, NA* c(1:(length(gen_int)-1)))
   seir_outputs$Rt_case = Rt_case
 
   rls = get_RL(seir_outputs$symptomatic_incidence, seir_outputs$time, dist_to_infectious, max_iter=50)

@@ -7,7 +7,7 @@ dir.create(file.path('figures'), showWarnings = FALSE)
 
 GAMMA = 1/4.02
 MU = 1/5.72
-t = c(0:201)
+t = c(0:301)
 init_conditions= c(S=10000000, E=1, I=0, R=0)
 
 b = function(t){
@@ -51,7 +51,7 @@ cori_deconvolved = as.data.frame(cori$R)
 cori_deconvolved$mean_t = (cori_deconvolved$t_start + cori_deconvolved$t_end)/2
 cori_true = as.data.frame(cori_true$R)
 cori_true$mean_t = (cori_true$t_start + cori_true$t_end)/2
-ggplot(data=cori_deconvolved, aes(x=t_end, y=`Mean(R)`)) + geom_line(data=cori_deconvolved, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with deconvolved values'))+  geom_line(data=cori_true, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with true values'))+ geom_line(data=seir_outputs, aes(x=t, y=Rt, color='Instantaneous Rt')) + theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt')
+ggplot(data=cori_deconvolved, aes(x=t_end, y=`Mean(R)`)) + geom_line(data=cori_deconvolved, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with deconvolved values'))+  geom_line(data=cori_true, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with true values'))+ geom_line(data=seir_outputs, aes(x=t, y=Rt, color='Instantaneous Rt')) + theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt') + ylim(c(0,3))
 ggsave('figures/rt_cori_deconvolved.png')
 
 # Wallinga methods
@@ -78,5 +78,5 @@ wt_deconvolved = as.data.frame(wt$R)
 wt_deconvolved$mean_t = (wt_deconvolved$t_start + wt_deconvolved$t_end)/2
 
 
-ggplot(data=wt_deconvolved, aes(x=t_end, y=`Mean(R)`)) + geom_line(data=wt_deconvolved, aes(x=t_end, y=`Mean(R)`, color='WT case Rt - Deconvolved incidence'))+ geom_line(data=wt_symptoms, aes(x=t_end, y=`Mean(R)`, color='WT case RT - Symptomatic'))+geom_line(data=seir_outputs, aes(x=t, y=Rt_case, color='True case Rt')) + theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt')
+ggplot(data=wt_deconvolved, aes(x=mean_t, y=`Mean(R)`)) + geom_line(data=wt_deconvolved, aes(x=mean_t, y=`Mean(R)`, color='WT case Rt - Deconvolved incidence'))+ geom_line(data=wt_symptoms, aes(x=mean_t, y=`Mean(R)`, color='WT case RT - Symptomatic'))+geom_line(data=seir_outputs, aes(x=t, y=Rt_case, color='True case Rt')) + theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt')
 ggsave('figures/rt_wt.png')

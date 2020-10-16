@@ -4,6 +4,7 @@ epidemic_timeseries/outputs/
 */.Rhistory
 */.RData
 */figures/
+shifts/figures_renewal
 shifts/figures_2
 shifts/SEIR_outputs.csv
 shifts/serial_interval.csv

@@ -175,6 +175,12 @@ This equation represents the cohort reproductive number, which will be estimated
     R_{case}(t) = R(t) * G
 \end{equation}
 
+Furthermore, I have also implemented a simulation based on the  \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5871640/}{renewal equation}, with stochasticity.
+
+\begin{equation}
+    I_t = Pois(R_t \sum_{s=0}^t I_{t-s} \omega_s)
+\end{equation}
+
 \subsection{Progress}
 From preliminary testing, the deconvolution method fits the true incidence quite well. However, further testing is required to see if it might work well in practice. It also works reasonably well with a changing R(t). 
 
@@ -224,7 +230,6 @@ The Cori method to the deconvoluted incidence also seems to work well with the s
 
 \subsection{Concerns}
 \begin{itemize}
-    \item The Cori estimates are no longer wrong, but the Wallinga-Tenuis ones are still slightly wrong. 
     \item I don't understand most of the math here. How was the R(t) calculated for the SEIR/other models? How does the RL deconvolution method work? How do the Cori and Wallinga estimation methods work?
 \end{itemize}
 
