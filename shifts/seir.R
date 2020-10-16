@@ -59,19 +59,3 @@ simulate_seir = function(t, conditions, b, gamma, mu,save_serial = TRUE){
   seir_outputs$deconvolved_incidence = rls$RL_result
   return(seir_outputs)
 }
-
-
-#GAMMA = 1/4.02
-#MU = 1/5.72
-#t = c(0:151)
-#init_conditions= c(S=1000000, E=1, I=0, R=0)
-
-#b = function(t){
-#  return (2*GAMMA)
-#}
-
-#seir_outputs = simulate_seir(t, init_conditions, b, GAMMA, MU)
-
-#ggplot(data=seir_outputs, aes(x=t, y=S)) + geom_line(aes(x=t, y=S, color='S'), )+ geom_line(aes(x=t, y=E, color='E')) + geom_line(aes(x=t, y=I, color='I')) + geom_line(aes(x=t, y=R, color='R') ) +theme_bw()  + labs(title='SEIR model outputs', x='time (days)', y = 'population')
-#ggplot(data=seir_outputs, aes(x=t, y=S)) + geom_line(aes(x=t, y=true_incidence, color='true incidence'))+ geom_line(aes(x=t, y=symptomatic_incidence, color='symptomatic incidence')) +geom_line(aes(x=t, y=deconvolved_incidence, color='deconvolved incidence')) + theme_bw()  + labs(title='SEIR model outputs', x='time (days)', y = 'population')
-#ggplot(data=seir_outputs, aes(x=t, y=S)) + geom_line(aes(x=t, y=Rt, color='Instantaneous Rt'))+ geom_line(aes(x=t, y=Rt_case, color='Cohort Rt')) + theme_bw()  + labs(title='SEIR model outputs', x='time (days)', y = 'Rt')

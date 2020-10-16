@@ -12,14 +12,14 @@ import numpy as np
 import os
 from ts_utils.load_data import *
 
-N=7
+N=14
 
 country_splitted_data = import_owid('data/owid-covid-data.xlsx')
 country_splitted_mobility = import_mobility('data/Global_Mobility_Report.csv')
 
+# %%
 if not os.path.exists('outputs/phase_plane'):
     os.mkdir('outputs/phase_plane')
-N=7
 plt.figure(figsize=(20, 10))
 plt.xlabel('transit_stations_percent_change_from_baseline')
 plt.ylabel('new cases per million')
@@ -35,18 +35,16 @@ for country in ['Canada', 'United States', 'United Kingdom', 'Mexico']:
     plt.scatter(mobility, new_cases, s=5, alpha=0.7)
     plt.scatter(mobility.to_numpy()[-1], new_cases.to_numpy()[-1], s=30, alpha=1, color='black')
     for i, _ in enumerate(mobility.to_numpy()[:-1]):
-        if i % 5 == 0:
+        if i % 10 == 0:
             plt.arrow(mobility[i], new_cases[i], mobility[i+1] - mobility[i], new_cases[i+1] - new_cases[i], head_width=0.5)
     plt.plot(mobility, new_cases, alpha=0.5, label=country)
     plt.legend()
 
 plt.savefig('outputs/phase_plane/mobility_vs_new_cases.png')
 #, 'Mexico', 'United Kingdom'
-# %%
 
-N=7
 plt.figure(figsize=(30, 16))
-plt.xlabel('PCA axis 0 mobility')
+plt.xlabel('PC 1 mobility')
 plt.ylabel('new cases per million')
 plt.title('Phase-plane plot of mobility against new cases')
 
@@ -64,7 +62,7 @@ for country in ['Canada', 'United States', 'United Kingdom', 'Mexico']:
     plt.scatter(mobility, new_cases, s=5, alpha=0.7)
     plt.scatter(mobility[-1], new_cases.to_numpy()[-1], s=30, alpha=1, color='black')
     for i, _ in enumerate(mobility[:-1]):
-        if i % 5 == 0:
+        if i % 10 == 0:
             plt.arrow(mobility[i], new_cases[i], mobility[i+1] - mobility[i], new_cases[i+1] - new_cases[i], head_width=0.5)
     plt.plot(mobility, new_cases, alpha=0.5, label=country)
     plt.legend()
@@ -74,12 +72,10 @@ plt.savefig('outputs/phase_plane/pca_mobility_vs_new_cases.png')
 
 # %%
 
-# %%
-
 plt.figure(figsize=(30, 16))
-plt.xlabel('PCA axis 0 mobility')
-plt.ylabel('PCA axis 1 mobility')
-plt.title('Phase-plane plot of PCA axes 0 and 1')
+plt.xlabel('PC 1 mobility')
+plt.ylabel('PC 2 mobility')
+plt.title('Phase-plane plot of PC 1 and PC 2')
 
 columns_of_interest = ['retail_and_recreation_percent_change_from_baseline', 'grocery_and_pharmacy_percent_change_from_baseline', 'transit_stations_percent_change_from_baseline','workplaces_percent_change_from_baseline', 'residential_percent_change_from_baseline'] 
 for country in ['Canada', 'United States', 'United Kingdom', 'Mexico']:
@@ -96,7 +92,7 @@ for country in ['Canada', 'United States', 'United Kingdom', 'Mexico']:
     plt.scatter(mobility[-1][0], mobility[-1][1], s=30, alpha=1, color='black')
 
     for i, _ in enumerate(mobility[:-1]):
-        if i % 5 == 0:
+        if i % 10 == 0:
             plt.arrow(mobility[i][0], mobility[i][1], mobility[i+1][0] - mobility[i][0], mobility[i+1][1] - mobility[i][1], head_width=0.5)
     plt.plot(mobility[:, 0], mobility[:, 1], alpha=0.5, label=country)
     plt.legend()
@@ -107,7 +103,6 @@ plt.savefig('outputs/phase_plane/pca_mobility_0_vs_1.png')
 # %%
 
 
-N=7
 plt.figure(figsize=(20, 10))
 plt.xlabel('total cases per million')
 plt.ylabel('new cases per million')
@@ -126,7 +121,7 @@ for country in ['Canada', 'United States', 'United Kingdom', 'Mexico', 'India', 
     plt.scatter(mobility, new_cases, s=5, alpha=0.7)
     plt.scatter(mobility.to_numpy()[-1], new_cases.to_numpy()[-1], s=30, alpha=1, color='black')
     for i, _ in enumerate(mobility.to_numpy()[:-1]):
-        if i % 5 == 0:
+        if i % 10 == 0:
             plt.arrow(mobility[i], new_cases[i], mobility[i+1] - mobility[i], new_cases[i+1] - new_cases[i], head_width=2, head_length = 30)
     plt.plot(mobility, new_cases, alpha=0.5, label=country)
     plt.legend()

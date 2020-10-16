@@ -55,26 +55,28 @@ def optimizer_function(k, target_0, target_1, diff_penalty=10):
     return np.mean((convolved - target_1[(len(kernel)-1):])**2) + np.sum(np.diff(kernel/np.sum(kernel))**2)*diff_penalty * np.mean(target_1[(len(kernel)-1):]**2) 
 
 
+
 # %%
+N=7
 for province in timeseries_by_province.keys():
 
     if np.mean(timeseries_by_province[province]['cases']) > 20:
         print(province)            
 
-        daily_cases = timeseries_by_province[province]['cases'].rolling(7).mean().dropna().to_numpy()
-        daily_recovered = timeseries_by_province[province]['recovered'].rolling(7).mean().dropna().to_numpy()
-        daily_death = timeseries_by_province[province]['deaths'].rolling(7).mean().dropna().to_numpy()
+        daily_cases = timeseries_by_province[province]['cases'].rolling(N).mean().dropna().to_numpy()
+        daily_recovered = timeseries_by_province[province]['recovered'].rolling(N).mean().dropna().to_numpy()
+        daily_death = timeseries_by_province[province]['deaths'].rolling(N).mean().dropna().to_numpy()
 
 
         x0 = np.concatenate([[0], np.ones(shape=(50,))], axis=0)
         x0 /= np.sum(x0)
 
-        xs = minimize(optimizer_function, x0, bounds = [[0, 1] for _ in x0], args=(daily_cases, daily_recovered, 1))#recovered))
+        xs = minimize(optimizer_function, x0, bounds = [[0, 1] for _ in x0], args=(daily_cases, daily_recovered, 0.1))#recovered))
 
         kernel = xs.x[:-1]/np.sum(xs.x[:-1]) * xs.x[-1]
         kernel = np.concatenate([[0], kernel], axis=0)
         reconstruction = np.convolve(kernel, daily_cases, mode='valid')
-        daily_dates =  timeseries_by_province[province]['date_report'][7-1:][(len(kernel)-1):]
+        daily_dates =  timeseries_by_province[province]['date_report'][N-1:][(len(kernel)-1):]
 
 
         r2 = r2_score(daily_recovered[(len(kernel)-1):], reconstruction)
@@ -93,10 +95,12 @@ for province in timeseries_by_province.keys():
         plt.plot(daily_cases[(len(kernel)-1):], label='incident cases')
         plt.title('Reconstruction of recovery curve, Reconstruction R2='+ str(round(r2, 2)))
         plt.xlabel('Days since ' + str(daily_dates.iloc[0]))
-        plt.ylabel('Incidence/Recovered smoothed over 7 days')
+        plt.ylabel('Incidence/Recovered smoothed over %s days' % str(N))
         plt.legend()
         plt.savefig('figures/'+ province + '-reconstructed-convolved.png')
 
         plt.clf()
 
 
+
+# %%

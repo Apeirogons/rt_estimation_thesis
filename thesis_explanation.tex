@@ -24,11 +24,6 @@
 \end{itemize}
 
 
-\section{Writeup Todo}
-\begin{itemize}
-    \item Add relevant images. Particularly important as this project benefits quite a bit from graphics
-    
-\end{itemize}
 
 \section{Mobility PCA}
 \subsection{Explanation of mobility PCA}
@@ -78,13 +73,14 @@ I don't understand DTW yet.
 \subsection{Explanation of plots}
 (For myself): Phase-planes plot two variables that are connected in time against each other. They're sort of similar to the vector field plots that pop up if you search up 'phase plane' in that it shows the evolution of two functions of an underlying variable.
 
-\begin{figure}
+\begin{figure}[h!]
     \centering
     \includegraphics[scale=0.25]{figures/mobility_vs_new_cases.png}
     \caption{A phase plane of transit mobility against new cases for selected countries}
     \label{fig:my_label}
 \end{figure}
 
+\pagebreak
 
 
 \subsection{Current approach}
@@ -93,7 +89,45 @@ I scatter-plot the two variables under consideration, then connect each dot with
 \subsection{Concerns}
 JD is colorblind, so MS should use a colorblind palette.
 
+\section{Convolution lag estimation}
+\subsection{Explanation}
+An older idea looking at the feasibility of determining time lag distributions by determining convolution kernels that could possibly be used to transform one timeseries into another. For example, we could find the kernel that transforms the recorded symptomatic timeseries into the recovered timeseries. I know that you said that this is not a very promising research direction, but it was too tempting to not try this after shifts (as we KNOW the time lag distribution from E->I and can directly evaluate this convolution). 
 
+\subsection{Current approach}
+At each step, I convolve the true incidence curve with a filter to attempt to get the new symptomatic cases (using scipy.optimize.minimize to minimize the mean squared error between true incidence curve and convolved symptomatic curve, with only valid convolutions used).
+I also use two constraints: filter[0] = 0, and I try to penalize non-smoothness by penalizing the size of the first differences of the filter.
+I could also force the kernel to correspond to some parametric distribution (gamma, lognormal, etc.) as I did before. I did not evaluate this idea yet, but it is simple to accomplish. 
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{figures_update_1/estimated_vs_true_kernels_seir.png}
+    \caption{Estimated vs true kernel for E to I transition}
+    \label{fig:my_label}
+\end{figure}
+
+Since this method should be usable on any kind of time lag, I tried to use it on real data with the incidence/recovery curves. To reduce the fluctuations, I smoothed with a filter of 7 days.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{figures_update_1/Ontario-reconstructed-convolved.png}
+    \caption{Reconstructed recovery curves for Ontario}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}[h!!!]
+    \centering
+    \includegraphics[scale=0.5]{figures_update_1/Ontario-estimated-recovery-kernel.png}
+    \caption{Estimated recovery distribution for Ontario}
+    \label{fig:my_label}
+\end{figure}
+
+\subsection{Concerns}
+\begin{itemize}
+    \item How the distribution looks depends a lot on the non-smoothness penalty.
+    \item If the original curves are not smoothed, the goodness of fit goes down drastically.
+\end{itemize}
+
+\pagebreak
 \section{Shifts}
 \subsection{Explanation of shifts}
 An exploration of JD's idea found  \href{http://dushoff.github.io/notebook/shifts.html}{here}. The idea is to investigate using the methods of Cori and Wallinga to estimate R(t). We will use deconvolution (currently Richardson-Lucy as used in the \href{https://www.medrxiv.org/content/10.1101/2020.06.18.20134858v3}{Gostic paper}) to provide an estimate of the true incidence curve from the number of new symptomatic infections. 
@@ -142,7 +176,7 @@ This equation represents the cohort reproductive number, which will be estimated
 \end{equation}
 
 \subsection{Progress}
-From preliminary testing, the deconvolution method fits the true incidence quite well. However, further testing is required (changing Rt, stochastic effects) to see if it might work well in practice.
+From preliminary testing, the deconvolution method fits the true incidence quite well. However, further testing is required to see if it might work well in practice. It also works reasonably well with a changing R(t). 
 
 The Cori method to the deconvoluted incidence also seems to work well with the static $\beta$ and slowly changing R(t). The Wallinga-Tenuis method seems to fit the slowly changing cohort R(t), but is incredibly slow.
 
@@ -167,6 +201,26 @@ The Cori method to the deconvoluted incidence also seems to work well with the s
     \label{fig:my_label}
 \end{figure}
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.6]{figures_update_1/incidence.png}
+    \caption{Deconvolution of incidence works reasonably well even with changing R(t).}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.6]{figures_update_1/rt_cori_deconvolved.png}
+    \caption{Cori estimates track R(t) well after the initial 50 days even with changing R(t).}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.6]{figures_update_1/rt_wt.png}
+    \caption{WT estimates of R(t) when R(t) is changing.}
+    \label{fig:my_label}
+\end{figure}
 
 \subsection{Concerns}
 \begin{itemize}

@@ -62,7 +62,7 @@ cori_deconvolved = as.data.frame(cori$R)
 cori_deconvolved$mean_t = (cori_deconvolved$t_start + cori_deconvolved$t_end)/2
 cori_true = as.data.frame(cori_true$R)
 cori_true$mean_t = (cori_true$t_start + cori_true$t_end)/2
-ggplot(data=cori_deconvolved, aes(x=t_end, y=`Mean(R)`)) + geom_line(data=cori_deconvolved, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with deconvolved values'))+  geom_line(data=cori_true, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with true values'))+ geom_line(data=seir_outputs, aes(x=t, y=Rt, color='Instantaneous Rt')) + theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt')
+ggplot(data=cori_deconvolved, aes(x=t_end, y=`Mean(R)`)) + geom_line(data=cori_deconvolved, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with deconvolved values'))+  geom_line(data=cori_true, aes(x=mean_t, y=`Mean(R)`, color='Estimated Rt with true values'))+ geom_line(data=seir_outputs, aes(x=t, y=Rt, color='Instantaneous Rt')) + theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt') + ylim(c(0,3))
 ggsave('figures_2/rt_cori_deconvolved.png')
 
 # Wallinga methods
