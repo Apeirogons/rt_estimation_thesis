@@ -8,7 +8,6 @@ shifts/figures_renewal
 shifts/figures_2
 shifts/SEIR_outputs.csv
 shifts/serial_interval.csv
-lag_estimation_revisited/data
 epidemic_timeseries/data/Global_Mobility_Report.csv
 
 
