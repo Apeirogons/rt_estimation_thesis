@@ -11,3 +11,4 @@ shifts/serial_interval.csv
 epidemic_timeseries/data/Global_Mobility_Report.csv
 
 
+*.png

@@ -3,6 +3,7 @@ library('deSolve')
 library('ggplot2')
 library('EpiEstim')
 source('cobey_ml_deconvolution.R')
+library('extraDistr')
 
 seir = function(t, conditions, parms){
   beta = b(t)
@@ -22,7 +23,16 @@ seir = function(t, conditions, parms){
 
   return (list(c(dSdt, dEdt, dIdt, dRdt)))}
 
-simulate_seir = function(t, conditions, b, gamma, mu,save_serial = TRUE){
+multiply_noise = function(x, alpha, beta){
+  noisy = c()
+
+  for (item in x){
+    noisy = append(noisy, rbbinom(1, item, alpha=alpha, beta=beta))
+  }
+  return (noisy)
+}
+  
+simulate_seir = function(t, conditions, b, gamma, mu, save_serial = TRUE, randomize = FALSE, randomize_params = c(alpha=100, beta=1)){
   beta_t = c()
   for (t0 in t){
     beta_t = append(beta_t, b(t0))
@@ -57,8 +67,20 @@ simulate_seir = function(t, conditions, b, gamma, mu,save_serial = TRUE){
   Rt_case = c(Rt_case, NA* c(1:(length(gen_int)-1)))
   seir_outputs$Rt_case = Rt_case
 
-  rls = get_RL(seir_outputs$symptomatic_incidence, seir_outputs$time, dist_to_infectious, max_iter=50)
-  rls=rls[rls['time'] >=0,]
-  seir_outputs$deconvolved_incidence = rls$RL_result
+  if (!randomize){
+    rls = get_RL(seir_outputs$symptomatic_incidence, seir_outputs$time, dist_to_infectious, max_iter=50)
+    rls=rls[rls['time'] >=0,]
+    seir_outputs$deconvolved_incidence = rls$RL_result
+  }
+  else{
+    seir_outputs$symptomatic_incidence = multiply_noise(round(seir_outputs$symptomatic_incidence), alpha=randomize_params['alpha'], beta=randomize_params['beta'] )
+    rls = get_RL(seir_outputs$symptomatic_incidence, seir_outputs$time, dist_to_infectious, max_iter=50)
+    rls=rls[rls['time'] >=0,]
+    seir_outputs$deconvolved_incidence = rls$RL_result
+    
+  }
   return(seir_outputs)
 }
+
+
+
