@@ -11,4 +11,5 @@ data from https://github.com/ishaberry/Covid19Canada.
 
 time_lag_old contains depreciated code. One idea was to use publicly available patient-level data to come up with key epidemiological lags, which seemed like an okay approach.
 
-The .zip file contains this repository, but with all code outputs and data ready.
+This Drive link contains this repository, but with all of the figures already created.
+https://drive.google.com/drive/folders/1sa2xwqrFETtIvaGxR2dfVfwESp-_oV7L?usp=sharing
