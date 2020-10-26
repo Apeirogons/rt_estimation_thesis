@@ -7,6 +7,7 @@
 \author{Matthew So}
 \date{October 2020}
 \usepackage{graphicx}
+\usepackage{mathrsfs}
 \begin{document}
 
 \maketitle
@@ -98,6 +99,7 @@ At each step, I convolve the true incidence curve with a filter to attempt to ge
 I also use two constraints: filter[0] = 0, and I try to penalize non-smoothness by penalizing the size of the first differences of the filter.
 I could also force the kernel to correspond to some parametric distribution (gamma, lognormal, etc.) as I did before. I did not evaluate this idea yet, but it is simple to accomplish. 
 
+\clearpage
 \begin{figure}[h!]
     \centering
     \includegraphics[scale=0.5]{figures_update_1/estimated_vs_true_kernels_seir.png}
@@ -114,26 +116,22 @@ Since this method should be usable on any kind of time lag, I tried to use it on
     \label{fig:my_label}
 \end{figure}
 
-\begin{figure}[h!!!]
+\begin{figure}[h!]
     \centering
     \includegraphics[scale=0.5]{figures_update_1/Ontario-estimated-recovery-kernel.png}
     \caption{Estimated recovery distribution for Ontario}
     \label{fig:my_label}
 \end{figure}
 
-\subsection{Concerns}
-\begin{itemize}
-    \item How the distribution looks depends a lot on the non-smoothness penalty.
-    \item If the original curves are not smoothed, the goodness of fit goes down drastically.
-\end{itemize}
+\clearpage
 
-\pagebreak
+
 \section{Shifts}
 \subsection{Explanation of shifts}
-An exploration of JD's idea found  \href{http://dushoff.github.io/notebook/shifts.html}{here}. The idea is to investigate using the methods of Cori and Wallinga to estimate R(t). We will use deconvolution (currently Richardson-Lucy as used in the \href{https://www.medrxiv.org/content/10.1101/2020.06.18.20134858v3}{Gostic paper}) to provide an estimate of the true incidence curve from the number of new symptomatic infections. 
+An exploration of JD's idea found  \href{http://dushoff.github.io/notebook/shifts.html}{here}. The idea is to investigate using the methods of Cori and Wallinga to estimate $\mathscr{R}(t)$. We will use deconvolution (currently Richardson-Lucy as used in the \href{https://www.medrxiv.org/content/10.1101/2020.06.18.20134858v3}{Gostic paper}) to provide an estimate of the true incidence curve from the number of new symptomatic infections. 
 
 \subsection{Current approach}
-I use code from the \href{https://github.com/cobeylab/Rt_estimation}{Gostic paper} to perform Richardson-Lucy deconvolution in R. I use the \href{https://cran.r-project.org/web/packages/EpiEstim/index.html}{EpiEstim} library to generate R(t) estimates using the Cori and Wallinga-Tenuis methods. 
+I use code from the \href{https://github.com/cobeylab/Rt_estimation}{Gostic paper} to perform Richardson-Lucy deconvolution in R. I use the \href{https://cran.r-project.org/web/packages/EpiEstim/index.html}{EpiEstim} library to generate $\mathscr{R}(t)$ estimates using the Cori and Wallinga-Tenuis methods. 
 
 Like the Gostic paper, I've used a vanilla SEIR model (We need to be able to replicate the results first).
 
@@ -145,16 +143,16 @@ Like the Gostic paper, I've used a vanilla SEIR model (We need to be able to rep
 \end{align}
 
 Therefore, these are equations representing the \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3935673/}{instantaneous reproductive number}:
+$\mathscr{R}_{i}(t)$: Instantaneous reproductive number, $\mathscr{R}_{c}(t)$: Case/cohort reproductive number
 
 \begin{align}
-    R_0 = \beta(t)/\mu \\
-    R(t) = \beta(t)/\mu \cdot S/N
+    \mathscr{R}_0 = \beta(t)/\mu \\
+    \mathscr{R}_{i}(t) = \beta(t)/\mu \cdot S/N
 \end{align}
 
-This is how (I think) you can obtain the generation interval distribution analytically. I may be totally wrong, please help here. It is an addition of exponential distributions of $E \xrightarrow{}I$ and $I \xrightarrow{} R$, exploiting the fact that both the means and variances add up, as well as that two exponential distributions multiplied by each other make a Gamma distribution. It also may not be super necessary now.
+I've left some equations for the determination of the generation interval here from the addition of exponential distributions of $E \xrightarrow{}I$ and $I \xrightarrow{} R$, exploiting the fact that both the means and variances add up. However, this parameterization isn't being used by any of the code at the moment, and if required, it may be better to parameterize it with $\kappa = 1/k$.
 
-
-$G$: generation interval distribution \\ 
+$G$: generation interval distribution \\
 $k$: shape parameter of Gamma distribution\\
 $\theta$: scale parameter of Gamma distribution\\
 
@@ -172,19 +170,19 @@ $\theta$: scale parameter of Gamma distribution\\
 This equation represents the cohort reproductive number, which will be estimated with the Wallinga method.
 
 \begin{equation}
-    R_{case}(t) = R(t) * G
+    \mathscr{R}_{c}(t) = \mathscr{R}_{i}(t) * G
 \end{equation}
 
 Furthermore, I have also implemented a simulation based on the  \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5871640/}{renewal equation}, with stochasticity.
 
 \begin{equation}
-    I_t = Pois(R_t \sum_{s=0}^t I_{t-s} \omega_s)
+    I_t = Pois(\mathscr{R}_{i}(t) \sum_{s=0}^t I_{t-s} \omega_s)
 \end{equation}
 
 \subsection{Progress}
-From preliminary testing, the deconvolution method fits the true incidence quite well. However, further testing is required to see if it might work well in practice. It also works reasonably well with a changing R(t). 
+From preliminary testing, the deconvolution method fits the true incidence quite well. However, further testing is required to see if it might work well in practice. It also works reasonably well with a changing $\mathscr{R}(t)$. 
 
-The Cori method to the deconvoluted incidence also seems to work well with the static $\beta$ and slowly changing R(t). The Wallinga-Tenuis method seems to fit the slowly changing cohort R(t), but is incredibly slow.
+The Cori method to the deconvoluted incidence also seems to work well, even with noise. The Wallinga-Tenuis method also seems to work well, but is horribly slow.
 
 \begin{figure}[h!]
     \centering
@@ -228,10 +226,26 @@ The Cori method to the deconvoluted incidence also seems to work well with the s
     \label{fig:my_label}
 \end{figure}
 
-\subsection{Concerns}
-\begin{itemize}
-    \item I don't understand most of the math here. How was the R(t) calculated for the SEIR/other models? How does the RL deconvolution method work? How do the Cori and Wallinga estimation methods work?
-\end{itemize}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{figures_update_2/incidence.png}
+    \caption{Deconvolution of incidence starts to become much more noisy when noise is added to the observed symptomatic curve.}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{figures_update_2/rt_cori_deconvolved.png}
+    \caption{Cori estimates track R(t) well after the initial 50 days even with the noisy deconvolution).}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{figures_update_2/rt_wt.png}
+    \caption{WT estimates of R(t) with noise}
+    \label{fig:my_label}
+\end{figure}
 
 
 
