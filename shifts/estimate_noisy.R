@@ -25,6 +25,8 @@ b = function(t){
 seir_outputs = simulate_seir(t, init_conditions, b, GAMMA, MU, randomize=TRUE, randomize_params=c(alpha=25,beta=3))
 samples = rbbinom(100000, 100000, alpha=25, beta=3)
 binom_df = data.frame(x=samples)
+
+write.csv(seir_outputs, 'noisy_seir_results.csv')
 ggplot(data=binom_df, aes(x=x)) + geom_histogram(aes(x=x)) +theme_bw()  + labs(title='Beta-binomial distribution for N=100000', x='number', y = 'count')
 ggsave(paste(file_path, '/distribution.png', sep=''))
 
