@@ -72,6 +72,7 @@ for (country in c('Canada', 'United States', 'United Kingdom', 'Japan')){
   cori = estimate_R(incidence, method=method, config=config)
   cori = as.data.frame(cori$R)
   cori$mean_t = (cori$t_start + cori$t_end)/2
+  cori$`Mean(R)` = shift(cori$`Mean(R)`, 3)
   plot = plot +  geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='Cori - "mine"'))
   print(length(incidence))
   
@@ -87,7 +88,7 @@ for (country in c('Canada', 'United States', 'United Kingdom', 'Japan')){
   wt = wallinga_teunis(incidence, method=method, config=config)
   wt_deconvolved = as.data.frame(wt$R)
   wt_deconvolved$mean_t = (wt_deconvolved$t_start + wt_deconvolved$t_end)/2
-  wt_deconvolved$`Mean(R)` = shift(wt_deconvolved$`Mean(R)`, 7)
+  wt_deconvolved$`Mean(R)` = shift(wt_deconvolved$`Mean(R)`, 7-1)
   plot = plot + geom_line(data=wt_deconvolved, aes(x=mean_t, y=`Mean(R)`, color='WT - Unshifted raw symptomatic'))
   print(plot)
   print(length(incidence))
