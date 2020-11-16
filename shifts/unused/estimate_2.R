@@ -16,9 +16,9 @@ b = function(t){
   if (t < 150){
     return (2*MU)}
   else if (t < 200) {
-    return(0.5*MU)}
+    return(0.95*MU)}
   else {
-    return(1.2*MU)
+    return(1.1*MU)
   }
 }
 
