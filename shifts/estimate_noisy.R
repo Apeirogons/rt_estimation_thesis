@@ -113,10 +113,9 @@ cori = estimate_R(incidence, method=method, config=config)
 cori = as.data.frame(cori$R)
 cori$mean_t = (cori$t_start + cori$t_end)/2
 mean_shift = mean_to_infectious
-cori$`Mean(R)` = shift(cori$`Mean(R)`, -mean_shift+1) #I don't know why +1 here, but it is exactly the same  as with deconvolved
+cori$`Mean(R)` = shift(cori$`Mean(R)`, -mean_shift+1) 
 plot = plot + geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='Cori- shifted raw symptomatic data'))#+ theme_bw()  + labs(title='Rt estimates', x='time (days)', y = 'Rt') + ylim(c(0,5))
 print(plot)
-
 
 
 ggsave(paste(file_path, '/instantaneous_rt.png', sep=''))
