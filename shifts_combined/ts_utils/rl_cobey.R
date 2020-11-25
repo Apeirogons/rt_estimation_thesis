@@ -15,7 +15,7 @@ library(rlang)
 
 discrete_deriv = function(x){
   diffs = diff(x)
-  expanded= c(0, diffs, 0)
+  expanded= c(diffs[1], diffs, diffs[length(diffs)])
   new = c()
   for(i in 1:(length(expanded)-1)){
     new = append(new, (expanded[i]+ expanded[i+1])/2)}
