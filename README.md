@@ -1,5 +1,5 @@
 # COVID-math-thesis
-Repository for code relating to my HTHSCI 4R09 thesis project, related to epidemic timeseries.
+Repository for code relating to my HTHSCI 4R12 thesis project, related to epidemic timeseries.
 
 Current project: R(t) estimation, in the shifts_combined folder.
 Data from https://ourworldindata.org/coronavirus.
