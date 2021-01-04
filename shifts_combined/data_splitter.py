@@ -10,7 +10,6 @@ from ts_utils.load_data import *
 
 country_splitted_data = import_owid('data/owid-covid-data.xlsx')
 
-
 countries_of_interest = ['South Korea', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Japan', 'France', 'Italy','India']
 
 

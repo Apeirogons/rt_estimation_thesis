@@ -1,7 +1,7 @@
 import pandas as pd
 
 def import_owid(location='../data/owid-covid-data.xlsx'):
-	original_data = pd.read_excel(location)
+	original_data = pd.read_excel(location,  engine='openpyxl')
 	unique_countries = list(set(original_data['location']))
 	country_splitted_data = {}
 	for country in unique_countries:

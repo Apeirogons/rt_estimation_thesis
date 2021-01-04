@@ -28,7 +28,7 @@ get_RL <- function(observed, ## Vector of observed cases. Let L = length(observe
                    max_iter = 50,
                    out_col_name = 'RL_result',
                    right_censor = TRUE, # If TRUE, upscale the observations at the end of the time series based on the cumulative probability that an infection occurring on that date would have been observed.
-                   verbose = TRUE, regularize = 0.001){
+                   verbose = TRUE, regularize = 0.001, stopping_n=1){
   
   ## Check inputs
   stopifnot(is.vector(observed) & is.vector(times) & is.vector(p_delay))
@@ -107,11 +107,13 @@ get_RL <- function(observed, ## Vector of observed cases. Let L = length(observe
   expected_D <- sapply(1:(length(lambda)), get_expected_D_i, lambda = lambda, p_delay = p_delay)
   ## Iterate to solve for lambda (the inferred time series of infections)
   iter = 1
-  while(get_chisq(observed, expected_D) > 1 & iter < max_iter){
+  while(get_chisq(observed, expected_D) > stopping_n & iter < max_iter){
     expected_D <- sapply(1:(length(lambda)), get_expected_D_i, lambda = lambda, p_delay = p_delay)
 
 
     reg_term <-  1/ (1 - regularize* discrete_deriv(discrete_deriv(lambda)/abs(discrete_deriv(lambda))))
+    
+
     reg_term[is.na(reg_term)] = 1  
   
     lambda <- sapply(1:(length(lambda)), get_lambda_j_update,
