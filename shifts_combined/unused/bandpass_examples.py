@@ -32,10 +32,10 @@ for i, country in enumerate(os.listdir('data')):
        # print(freqs)
         plt.figure(figsize=(10, 5))
         periods = np.abs(1/freqs)
-
-        f = rfft(obs_symptomatic_incidence)
+        shape = obs_symptomatic_incidence.shape
+        f = fft(obs_symptomatic_incidence)
         f[periods < 7] = 0
-        filtered = irfft(f)
+        filtered = ifft(f)
         
 
         plt.title(country)
@@ -50,9 +50,9 @@ for i, country in enumerate(os.listdir('data')):
         plt.figure(figsize=(10, 5))
         periods = np.abs(1/freqs)
 
-        f = rfft(obs_symptomatic_incidence)
+        f = fft(obs_symptomatic_incidence)
         f[(periods < 8) & (periods > 6)] = 0
-        filtered = irfft(f)
+        filtered = ifft(f)
         
 
         plt.title(country)

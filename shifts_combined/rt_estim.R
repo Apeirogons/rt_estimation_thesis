@@ -93,16 +93,23 @@ wt$r_shifted = data.table::shift(wt$`Mean(R)`, mean_generation)
 plot = plot +  geom_line(data=wt, aes(x=mean_t, y=r_shifted, color='WT-shifts')) 
 
 print(plot)
+
+
+# Interesting call to do deconv instead of shifts but it's not that good
+si = discr_si(c(0:40), mean_generation, sd_generation)
+
+rls = get_RL(wt$`Mean(R)`, wt$mean_t, si, max_iter=200, regularize=0.01, stopping_n=0.01)
+rls=rls[rls['time'] >=0,]
+
+wt$deconv_R = rls$RL_result[1:length(wt$`Mean(R)`)]
+wt$deconv_R = data.table::shift(wt$deconv_R, -(25)) #I don't know what the actual shifting level should be, but this is the number of NAs at the end of the sequence
+plot = plot + geom_line(data=wt, aes(x=mean_t, y=deconv_R, color='WT, deconv on R'))
 ggsave('figures_simulation/rt.png')
 
-#obj = extrapolate(seir, 'smoothed_symptomatic_incidence')
-#data_of_interest = obj$data
-#cori = cori_estimation(data_of_interest, mean_generation, sd_generation) 
-#plot = plot+ geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='Cori-smooth, shifts'))
-#print(plot)
 
+#seir$rl_deconv[is.na(seir$rl_deconv)] = 0
 
-
+#wt$deconv_R = 
 #output = wt$deconv_rl[!is.na(wt$deconv_rl)]
 #wt$deconv_rl = append(output, replicate(length(wt$deconv_rl) - length(output), NA)
 #ggplot(data=wt)+ geom_line(data=wt, aes(x=mean_t, y=`Mean(R)`, color='WT-normal')) 
