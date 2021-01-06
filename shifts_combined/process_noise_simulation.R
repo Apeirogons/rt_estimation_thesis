@@ -35,25 +35,29 @@ write.csv(incubation_df, paste(paste('incubation_period', '.csv', sep='')))
 file_path = 'figures_simulation'
 dir.create(file.path(file_path), showWarnings = FALSE)
 
-t = c(-1:400)
+t = c(-1:401)
 
 
 b = function(t, MU){
   if (t< 100){
-    return(1.5*MU)
+    z=1.5
   }
   else if (t < 150){
-    return(1.2*MU)
+    z=1.2
   }
   else if (t < 200){
-    return(0.99*MU)
+    z=0.99
   }
   else if (t < 300){
-    return(0.8*MU)
+    z=0.8
   }
   else{
-    return (1.1*MU)
+    z=1.1
   }
+ # if(((t %% 7) == 0) | ((t %% 7 == 1))){
+#    z = z+0.5
+#  }
+  return(z*MU)
 }
 
 ###########################################################################################
@@ -65,6 +69,7 @@ O = 0
 R = 0
 
 detection_prob = 0.8
+#detection_const = MU
 
 EI_transitions= c(1:1000)*0
 EO_transitions = c(1:1000)*0
@@ -84,10 +89,10 @@ obs_symptomatic_incidence = c()
 
 for(time_step in t){
   if (((time_step %% 7) == 0) | ((time_step %% 7) == 1)){
-    detection_const = 1/3
+    detection_const = 0.136*2#1/3
   }
   else{
-    detection_const = 1/6
+    detection_const = 0.136#1/6
   }
 
   # Append states
@@ -103,13 +108,15 @@ for(time_step in t){
   
   if (time_step == -1){
     new_infections = 10
+    true_incidence = append(true_incidence, 0)
   }
   else{
   # Determine number of S-->E transitions
   new_infection_probability = I*beta_t/N
-  new_infections = rbinom(1, size=S, prob=new_infection_probability)}
 
-  true_incidence = append(true_incidence, S*new_infection_probability)
+  new_infections = rbinom(1, size=S, prob=new_infection_probability)
+
+  true_incidence = append(true_incidence, S*new_infection_probability)}
   
   # compute the E-->I and E-->O transition times for each new E
   
@@ -162,3 +169,4 @@ ggsave('incidence_curves.png')
 #ggplot(df) + geom_line(aes(x=t, y=Rt, color='Rt')) 
 
 write.csv(df, 'data/seir.csv')
+#rm(list=ls())

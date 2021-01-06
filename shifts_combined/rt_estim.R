@@ -21,10 +21,9 @@ seir = read.csv('data/seir.csv')
 
 
 # Wavelet LP filter
-smoothed_symptomatic_incidence = wavelet_lp_filter(seir$obs_symptomatic_incidence, 5, 'db2')
+smoothed_symptomatic_incidence = wavelet_lp_filter(seir$obs_symptomatic_incidence, 5, 'db3')
 seir$smoothed_symptomatic_incidence = smoothed_symptomatic_incidence
 plot = ggplot(seir) + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='smoothed'), alpha=0.75) + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='obs'), alpha=0.75) + scale_color_colorblind()
-plot = plot  + geom_line(aes(x=X, y=scaled_symptomatic_incidence, color='true'), alpha=0.75)
 print(plot)
 ggsave('figures_simulation/smoothing.png')
 
@@ -49,10 +48,10 @@ extrapolate = function(seir, target, n_targets=20, n_extend=50){
   return(list(Xs=Xs, data=c(data_of_interest)))}
 
 # Deconvolution
-obj = extrapolate(seir, 'obs_symptomatic_incidence')
+obj = extrapolate(seir, 'smoothed_symptomatic_incidence')
 Xs = obj$Xs
 data_of_interest = obj$data
-rls = get_RL(data_of_interest, Xs, dist_to_infectious$seir, max_iter=200, regularize=0.1, stopping_n=0.5)
+rls = get_RL(data_of_interest, Xs, dist_to_infectious$seir, max_iter=200, regularize=0.01, stopping_n=0.5)
 rls=rls[rls['time'] >=0,]
 seir$rl_deconv = rls$RL_result[1:length(seir$X)]
 seir$rl_deconv[is.na(seir$rl_deconv)] = 0
@@ -68,7 +67,7 @@ obj = generation_seir(gm, mu)
 mean_generation = obj['mean']
 sd_generation = obj['sd']
 
-obj = extrapolate(seir, 'obs_symptomatic_incidence')
+obj = extrapolate(seir, 'smoothed_symptomatic_incidence')
 data_of_interest = obj$data
 cori = cori_estimation(data_of_interest, mean_generation, sd_generation) 
 cori$`Mean(R)` = data.table::shift(cori$`Mean(R)`, -round(1/gm))
@@ -83,7 +82,7 @@ cori = cori_estimation(data_of_interest, mean_generation, sd_generation)
 plot = plot+ geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='Cori-deconv'))
 #print(plot)
 
-obj = extrapolate(seir, 'obs_symptomatic_incidence')#noisy_symptomatic_incidence rl_deconv smoothed_rl_deconv
+obj = extrapolate(seir, 'smoothed_symptomatic_incidence')#noisy_symptomatic_incidence rl_deconv smoothed_rl_deconv
 data_of_interest = obj$data
 wt = wt_estimation(data_of_interest, mean_generation, sd_generation)
 wt$r_shifted = data.table::shift(wt$`Mean(R)`, mean_generation)
@@ -103,8 +102,8 @@ wt$deconv_R = rls$RL_result[1:length(wt$`Mean(R)`)]
 
 wt$deconv_R = data.table::shift(wt$deconv_R, 5) #I don't know what the actual shifting level should be, but this is the number of NAs at the end of the sequence
 
-plot = ggplot(seir) + geom_line(data=wt, aes(x=mean_t, y=deconv_R, color='WT, deconv on R'))
-plot = plot + geom_line(data=seir, aes(x=X, y=Rt, color='True Rt'))
+plot = plot + geom_line(data=wt, aes(x=mean_t, y=deconv_R, color='WT, deconv on R'))
+# = plot + geom_line(data=seir, aes(x=X, y=Rt, color='True Rt'))
 #print(wt$deconv_R)
 print(plot)
 
