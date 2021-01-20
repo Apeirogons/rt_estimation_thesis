@@ -31,7 +31,7 @@ multiply_noise = function(x, alpha, beta){
   return (noisy)
 }
 
-simulate_seir = function(t, conditions, b, gamma, mu,  randomize_params = c(alpha=100, beta=1)){
+simulate_seir = function(t, conditions, b, gamma, mu){
   beta_t = c()
   for (t0 in t){
     beta_t = append(beta_t, b(t0))
@@ -61,11 +61,9 @@ simulate_seir = function(t, conditions, b, gamma, mu,  randomize_params = c(alph
   Rt_case = c(Rt_case, NA* c(1:(length(gen_int)-1)))
   seir_outputs$Rt_case = Rt_case
   
-
   seir_outputs$noisy_symptomatic_incidence = multiply_noise(round(seir_outputs$symptomatic_incidence), alpha=randomize_params['alpha'], beta=randomize_params['beta'] )
   
-  mean_gamma_multiplier = randomize_params['alpha']/(randomize_params['alpha'] + randomize_params['beta'])
-  seir_outputs$scaled_true_incidence = seir_outputs$true_incidence*mean_gamma_multiplier
-  seir_outputs$scaled_symptomatic_incidence = seir_outputs$symptomatic_incidence*mean_gamma_multiplier
+  seir_outputs$scaled_true_incidence = seir_outputs$true_incidence
+  seir_outputs$scaled_symptomatic_incidence = seir_outputs$symptomatic_incidence
   return(seir_outputs)
 }
