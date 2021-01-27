@@ -7,6 +7,20 @@ library('poweRlaw')
 library('data.table')
 library('ggthemes')
 
+n_day_smoother = function(data, N=7){
+  stopifnot(length(data) > N)
+  means = c() 
+  for(i in c(1:(length(data)-N))){
+    
+    subslice = data[i:(i+N)]
+    print(subslice)
+    means = append(means, mean(subslice))
+    #  print(mean(subslice))
+  }
+  means = append(means, replicate(N, NA))
+  shifted_means = data.table::shift(means, N/2)
+  return(shifted_means)
+}
 
 r_alt_nbinom = function(N, mean, k){
   if(k == 0){

@@ -75,10 +75,107 @@ mean_detection = sum(c(0:(length(detection_pdf)-1))*detection_pdf)
 dir.create('smoothing_imgs', showWarnings = FALSE)
 dir.create('estim_imgs', showWarnings=FALSE)
 
+
+i = 'deterministic'
+seir = read.csv(paste('seir/deterministic.csv'))
+
+
+seir$smoothed_symptomatic_incidence = n_day_smoother(seir$obs_symptomatic_incidence)
+
+seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
+plot = ggplot(seir) 
+plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='3-smoothed symptomatic'), alpha=1) 
+plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
+plot = plot + geom_line(aes(x=X, y=scaled_expected_incidence, color='4-expected true incidence'), alpha=0.1)
+plot = plot + geom_line(aes(x=X, y=convolved_expected, color='1-true incidence forward-convolved by weekly mean detection kernel'), alpha=1)
+plot = plot + scale_color_colorblind()
+print(plot)
+ggsave(paste('smoothing_imgs/7day_', toString(i), '.png'))
+
+
+#
+z = seir$obs_symptomatic_incidence #seir$smoothed_symptomatic_incidence[4:(length(seir$smoothed_symptomatic_incidence) -4)]
+waveletted = wavelet_lp_filter(z, 3, 'db4') 
+
+#smoothed_symptomatic_incidence = append(rep(NA, 3), waveletted)
+#smoothed_symptomatic_incidence = append(smoothed_symptomatic_incidence, rep(NA, 3))
+smoothed_symptomatic_incidence=waveletted
+seir$smoothed_symptomatic_incidence = smoothed_symptomatic_incidence
+seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
+plot = ggplot(seir) 
+plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='3-smoothed symptomatic'), alpha=1) 
+plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
+plot = plot + geom_line(aes(x=X, y=scaled_expected_incidence, color='4-expected true incidence'), alpha=0.1)
+plot = plot + geom_line(aes(x=X, y=convolved_expected, color='1-true incidence forward-convolved by weekly mean detection kernel'), alpha=1)
+plot = plot + scale_color_colorblind()
+print(plot)
+ggsave(paste('smoothing_imgs/', toString(i), '.png'))
+
+
+stopifnot(generation_int[1] < 1e-5)
+generation_int[1] = 0
+obj = extrapolate(seir, 'expected_incidence')
+data_of_interest = obj$data
+cori = cori_estimation(data_of_interest, generation_int) 
+plot = ggplot(data=cori) + geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='3. Cori - expected'))+ labs(title='Rt estimates', x='time (days)', y = 'Rt') + ylim(c(0,3)) + scale_color_colorblind()
+plot = plot + geom_line(data=seir, aes(x=X, y=Rt, color='True Rt'))
+
+
+obj = extrapolate(seir, 'smoothed_symptomatic_incidence')
+data_of_interest = obj$data
+cori = cori_estimation(data_of_interest, generation_int) 
+cori$`Mean(R)` = data.table::shift(cori$`Mean(R)`, -1*mean_detection)
+plot =  plot + geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='1. Cori - smoothed symptomatic'), alpha=0.5)
+
+obj = extrapolate(seir, 'obs_symptomatic_incidence')
+data_of_interest = obj$data
+cori = cori_estimation(data_of_interest, generation_int) 
+cori$`Mean(R)` = data.table::shift(cori$`Mean(R)`, -1*mean_detection)
+plot =  plot + geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='2. Cori - symptomatic'), alpha=0.5)
+print(plot)
+
+ggsave(paste('estim_imgs/', toString(i), '.png'))
+
+
+rt_smoothed = data.table::shift(diff(seir$smoothed_symptomatic_incidence)/seir$smoothed_symptomatic_incidence[1:(length(seir$smoothed_symptomatic_incidence) -1)], mean_detection)
+ggplot_df = data.frame(x = c(0:(length(seir$smoothed_symptomatic_incidence)-2)), rt_smoothed = rt_smoothed, rt_actual = diff(seir$scaled_expected_incidence)/seir$scaled_expected_incidence[1:(length(seir$scaled_expected_incidence) -1)])
+plot = ggplot(ggplot_df)
+
+plot = plot + geom_line(aes(x=x, y=rt_smoothed, color='rt_smoothed'))
+plot = plot + geom_line(aes(x=x, y=rt_actual, color='rt_actual'))
+plot = plot + ylim(-0.1, 0.1)
+print(plot)
+ggsave('rt.png')
+
+
+
+
 for( i in c(2:20)){
   seir = read.csv(paste('seir/', toString(i),  '.csv'))
-  smoothed_symptomatic_incidence = wavelet_lp_filter(seir$obs_symptomatic_incidence, 3, 'db4') 
+  
+  seir$smoothed_symptomatic_incidence = n_day_smoother(seir$obs_symptomatic_incidence)
+  
+  seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
+  plot = ggplot(seir) 
+  plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='3-smoothed symptomatic'), alpha=1) 
+  plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
+  plot = plot + geom_line(aes(x=X, y=scaled_expected_incidence, color='4-expected true incidence'), alpha=0.1)
+  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='1-true incidence forward-convolved by weekly mean detection kernel'), alpha=1)
+  plot = plot + scale_color_colorblind()
+  print(plot)
+  ggsave(paste('smoothing_imgs/7day_', toString(i), '.png'))
+  
+  
+  
+  z = seir$smoothed_symptomatic_incidence[4:(length(seir$smoothed_symptomatic_incidence) -4)]
+  waveletted = wavelet_lp_filter(z, 3, 'db4') 
+  smoothed_symptomatic_incidence = append(rep(NA, 3), waveletted)
+  smoothed_symptomatic_incidence = append(smoothed_symptomatic_incidence, rep(NA, 3))
+  
   seir$smoothed_symptomatic_incidence = smoothed_symptomatic_incidence
+  
+  #smoothed_symptomatic_incidence = wavelet_lp_filter(seir$obs_symptomatic_incidence, 3, 'db4') 
+  #seir$smoothed_symptomatic_incidence = smoothed_symptomatic_incidence
   seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
   plot = ggplot(seir) 
   plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='3-smoothed symptomatic'), alpha=1) 
@@ -147,16 +244,6 @@ plot = plot + geom_line(data=seir, aes(x=X, y=shifted_smoothed_symptomatic_incid
 print(plot)
 ggsave('deconvolution.png')
 
-
-rt_smoothed = data.table::shift(diff(seir$smoothed_symptomatic_incidence)/seir$smoothed_symptomatic_incidence[1:(length(seir$smoothed_symptomatic_incidence) -1)], mean_detection)
-ggplot_df = data.frame(x = c(0:(length(seir$smoothed_symptomatic_incidence)-2)), rt_smoothed = rt_smoothed, rt_actual = diff(seir$scaled_expected_incidence)/seir$scaled_expected_incidence[1:(length(seir$scaled_expected_incidence) -1)])
-plot = ggplot(ggplot_df)
-
-plot = plot + geom_line(aes(x=x, y=rt_smoothed, color='rt_smoothed'))
-plot = plot + geom_line(aes(x=x, y=rt_actual, color='rt_actual'))
-plot = plot + ylim(-0.1, 0.1)
-print(plot)
-ggsave('rt.png')
 
 
 
