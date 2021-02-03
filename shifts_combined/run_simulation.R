@@ -89,16 +89,15 @@ file_path = 'seir'
 dir.create(file.path(file_path), showWarnings = FALSE)
 
 
-df = simulate_deterministic(10000000, 10, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob, noise='observation')
+df = simulate_deterministic(10000000, 10, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob, noise='none')#'observation')
 write.csv(df, 'seir/deterministic.csv')
-print('Iteration 0: Deterministic')
+print('Iteration 0: deterministic')
 
 ggplot(df) + geom_line(aes(x=t, y=expected_incidence, color='expected_incidence', alpha=0.5)) + geom_line(aes(x=t, y=obs_symptomatic_incidence, color='obs_symptomatic_incidence', alpha=0.5)) + scale_color_colorblind()
-ggsave('deterministic_img.png')
 
-for(i in c(1:100)){
+for(i in c(1:5)){
 
-  df = simulate(10000000, 10, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob)
+  df = simulate_deterministic(10000000, 10, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob, noise='observation')
 
   write.csv(df, paste('seir/', toString(i), '.csv'))
   print(paste('Iteration: ', toString(i)))
