@@ -13,7 +13,7 @@ library('ggplot2')
 source('ts_utils/process_utils.R')
 
 
-simulate = function(init_N, init_infections, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob){
+simulate_process = function(init_N, init_infections, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob){
   N = init_N
   S = N
   E = 0 
@@ -56,7 +56,7 @@ simulate = function(init_N, init_infections, b, t, incubation_pdf, infectious_pd
     all_Rt = append(all_Rt, beta_t/mu * S/N)
   
     
-    if (time_step == -1){
+    if (time_step == 0){
       new_infections = init_infections
       expected_incidence = append(expected_incidence, 0)
       randomized_incidence = append(randomized_incidence, 0)

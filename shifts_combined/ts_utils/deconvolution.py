@@ -8,13 +8,14 @@ from scipy.fftpack import rfft, irfft, fftfreq, fft, ifft
 
 import pywt
 
-def wavelet_filter(symptomatic_incidence, wavelet='sym2', cutoff=15, k=5 ):
+def wavelet_filter(symptomatic_incidence, c, wavelet='sym2', cutoff=15):
     dec = [np.asarray(x) for x in pywt.wavedec(symptomatic_incidence, wavelet)]
-
+    print('There are ' + str(len(dec)) + ' levels.')
     for i, _ in enumerate(dec):
-        x = np.abs(dec[i])
-        filt = 1 - np.exp(-k*(x-cutoff))/(1+np.exp(-k*(x-cutoff)))
-        dec[i] *= filt
+        if(i >= c):
+            x = np.abs(dec[i])
+            filt = np.greater(x, cutoff).astype('float32') #1 - np.exp(-k*(x-cutoff))/(1+np.exp(-k*(x-cutoff)))
+            dec[i] *= filt
     rec = pywt.waverec(dec, wavelet)
     return rec
 

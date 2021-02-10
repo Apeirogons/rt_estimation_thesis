@@ -57,7 +57,7 @@ simulate_deterministic = function(init_N, init_infections, b, t, incubation_pdf,
     all_Rt = append(all_Rt, beta_t/mu * S/N)
     
     
-    if (time_step == -1){
+    if (time_step == 0){
       new_infections = init_infections
       expected_incidence = append(expected_incidence, 0)
       randomized_incidence = append(randomized_incidence, 0)
