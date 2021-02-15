@@ -37,6 +37,5 @@ wt_estimation = function(i, generation_int){
   wt = wallinga_teunis(incidence, method=method, config=config)
   wt_deconvolved = as.data.frame(wt$R)
   wt_deconvolved$mean_t = (wt_deconvolved$t_start + wt_deconvolved$t_end)/2
-  # wt_deconvolved$`Mean(R)` = shift(wt_deconvolved$`Mean(R)`, -mean_generation)
   return(wt_deconvolved)
 }

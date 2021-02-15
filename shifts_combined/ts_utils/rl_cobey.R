@@ -107,7 +107,7 @@ get_RL <- function(observed, ## Vector of observed cases. Let L = length(observe
   expected_D <- sapply(1:(length(lambda)), get_expected_D_i, lambda = lambda, p_delay = p_delay)
   ## Iterate to solve for lambda (the inferred time series of infections)
   iter = 1
-  while(get_chisq(observed, expected_D) > stopping_n & iter < max_iter){
+  while((get_chisq(observed, expected_D) > stopping_n) & (iter < max_iter)){
     expected_D <- sapply(1:(length(lambda)), get_expected_D_i, lambda = lambda, p_delay = p_delay)
 
 

@@ -75,7 +75,7 @@ get_detection_pdfs = function(detection_prob, detection_consts, infectious_pdf, 
   return(list(periodized_detections=periodized_detections, p_greaters = p_greaters, cumulative_time_to_recovery=cumulative_time_to_recovery))
 }
 
-extrapolate = function(seir, target, n_targets=20, n_extend=50){
+extrapolate = function(seir, target, n_targets=50, n_extend=20){
   data_of_interest = seir[[target]]
   data_end = tail(seir, n_targets)
   fm <- as.formula(paste(target, " ~ poly(X, 1)"))
