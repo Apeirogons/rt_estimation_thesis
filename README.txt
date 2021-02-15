@@ -11,4 +11,5 @@ Activate environment.
 
 Split the data.
 - Run data_splitter.py
+- Run run_simulation.R.
 - Run all of the other R files except base_params.R.
