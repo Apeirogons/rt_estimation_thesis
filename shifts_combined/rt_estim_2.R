@@ -60,7 +60,7 @@ ggsave(paste('figures/estim_', toString(i), '.png', sep=''))
 
 rt_smoothed = diff(seir$smoothed_symptomatic_incidence)/seir$smoothed_symptomatic_incidence[1:(length(seir$smoothed_symptomatic_incidence) -1)]
 rt_smoothed = rollmean(rt_smoothed, 7, fill=NA, align='center')
-rt_smoothed = data.table::shift(rt_smoothed, mean_detection)
+rt_smoothed = data.table::shift(rt_smoothed, -1*mean_detection)
 
 ggplot_df = data.frame(x = c(0:(length(seir$smoothed_symptomatic_incidence)-2)), rt_smoothed = rt_smoothed, rt_actual = diff(seir$scaled_expected_incidence)/seir$scaled_expected_incidence[1:(length(seir$scaled_expected_incidence) -1)])
 
@@ -84,20 +84,10 @@ ggsave(paste('figures/rt_', toString(i), '.png', sep=''))
 
 
 
-
-
-
-
-
-
-
-
-
-
 for(i in c(1:5)){
   
   seir = read.csv(paste('seir/simple_observation_', toString(i), '.csv', sep=''))
-  seir$smoothed_symptomatic_incidence = n_day_smoother(seir$obs_symptomatic_incidence, 14)
+  seir$smoothed_symptomatic_incidence = n_day_smoother(seir$obs_symptomatic_incidence, 7)
   
   seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
   plot = ggplot(seir) 
@@ -136,8 +126,8 @@ for(i in c(1:5)){
 
   
   rt_smoothed = diff(seir$smoothed_symptomatic_incidence)/seir$smoothed_symptomatic_incidence[1:(length(seir$smoothed_symptomatic_incidence) -1)]
-  rt_smoothed = rollmean(rt_smoothed, 14, fill=NA, align='center')
-  rt_smoothed = data.table::shift(rt_smoothed, mean_detection)
+  rt_smoothed = rollmean(rt_smoothed, 7, fill=NA, align='center')
+  rt_smoothed = data.table::shift(rt_smoothed, -1*mean_detection)
   
   ggplot_df = data.frame(x = c(0:(length(seir$smoothed_symptomatic_incidence)-2)), rt_smoothed = rt_smoothed, rt_actual = diff(seir$scaled_expected_incidence)/seir$scaled_expected_incidence[1:(length(seir$scaled_expected_incidence) -1)])
   

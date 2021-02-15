@@ -392,7 +392,13 @@ Wiener deconvolution performs deconvolution in the Fourier domain (deconvolution
 
 \section{Use of methods on real-world data}
 \subsection{Explanation}
-I have applied the most promising methods (7-day smoothing, shifted Cori, and naive $\nr(t)$ estimation) on some real-world data below.
+I have applied the most promising methods (7-day smoothing, shifted Cori, and naive $\nr(t)$ estimation) on some real-world data below. I also tried using Richardson-Lucy deconvolution to see how well it would work on real-world data. 
+
+\begin{enumerate}
+    \item Smoothing doesn't really matter for Cori $\nR(t)$ estimation, but is necessary for naive $\nr(t)$ estimation.
+    \item 7-day smoothing works fine. 
+    \item Richardson-Lucy deconvolution can be applied to real-world COVID-19 data.
+\end{enumerate}
 
 
 \subsection{Figures - Germany}
@@ -400,6 +406,13 @@ I have applied the most promising methods (7-day smoothing, shifted Cori, and na
     \centering
     \includegraphics[scale=0.5]{figures/smoothing_Germany.png}
     \caption{Use of 7-day smoothing on German real-world incidence data}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{figures/deconv_Germany.png}
+    \caption{Deconvolution on German real-world incidence data}
     \label{fig:my_label}
 \end{figure}
 
@@ -418,11 +431,19 @@ I have applied the most promising methods (7-day smoothing, shifted Cori, and na
     \label{fig:my_label}
 \end{figure}
 
+\clearpage
 \subsection{Figures - Italy}
 \begin{figure}[h!]
     \centering
     \includegraphics[scale=0.5]{figures/smoothing_Italy.png}
     \caption{Use of 7-day smoothing on Italian real-world incidence data}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{figures/deconv_Italy.png}
+    \caption{Deconvolution on Italian real-world incidence data}
     \label{fig:my_label}
 \end{figure}
 
@@ -441,12 +462,19 @@ I have applied the most promising methods (7-day smoothing, shifted Cori, and na
     \label{fig:my_label}
 \end{figure}
 
-
+\clearpage
 \subsection{Figures - South Korea}
 \begin{figure}[h!]
     \centering
     \includegraphics[scale=0.5]{figures/smoothing_South Korea.png}
     \caption{Use of 7-day smoothing on South Korean real-world incidence data}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{figures/deconv_South Korea.png}
+    \caption{Deconvolution on South Korean real-world incidence data}
     \label{fig:my_label}
 \end{figure}
 
