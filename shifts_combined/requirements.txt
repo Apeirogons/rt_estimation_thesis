@@ -1,5 +1,0 @@
-pandas
-matplotlib
-scipy 
-numpy
-pywavelets
