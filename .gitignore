@@ -8,3 +8,4 @@ seir/*
 *.toc
 *.out
 *.pdf
+*.gz
