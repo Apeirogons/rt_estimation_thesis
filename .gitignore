@@ -3,3 +3,8 @@ data/*
 seir/*
 .Rhistory
 *.pyc
+*.aux
+*.log
+*.toc
+*.out
+*.pdf

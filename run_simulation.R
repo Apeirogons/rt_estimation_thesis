@@ -72,12 +72,16 @@ for(i in c(1:5)){
   plotter(df, paste('process_', toString(i), sep=''))
 }
 
+# Dying out happens with high certainty!
+
 for(i in c(1)){
+
   df = simulate_process(10000000, 1, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob)
-  
+  while(df$obs_symptomatic_incidence[400] > 0){
+    df = simulate_process(10000000, 1, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob)
+  }
   write.csv(df, paste('seir/process_die', toString(i), '.csv', sep=''))
   print(paste('Iteration: ', toString(i)))
   plotter(df, paste('process_die', toString(i), sep=''))
 }
-
 

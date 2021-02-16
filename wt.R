@@ -19,7 +19,6 @@ source('base_params.R')
 
 
 for (i in c('process_1', 'deterministic')){
-  i = 'process_1'
   seir = read.csv(paste('seir/', i, '.csv', sep=''))
   
   seir$smoothed_symptomatic_incidence = n_day_smoother(seir$obs_symptomatic_incidence)

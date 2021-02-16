@@ -36,7 +36,7 @@ for (i in c('Germany', 'South Korea', 'Italy')){
   plot = plot + scale_color_colorblind()
   print(plot)
   
-  ggsave(paste('figures/smoothing_', toString(i), '.png', sep=''))
+  ggsave(paste('figures/smoothing_', toString(i), '.png', sep=''), width=10.4, height=6.15)
   
   
   
@@ -57,7 +57,7 @@ for (i in c('Germany', 'South Korea', 'Italy')){
   plot = plot + scale_color_colorblind()
   print(plot)
   
-  ggsave(paste('figures/deconv_', toString(i), '.png', sep=''))
+  ggsave(paste('figures/deconv_', toString(i), '.png', sep=''), width=10.4, height=6.15)
   
   
   stopifnot(generation_int[1] < 1e-5)
@@ -84,7 +84,7 @@ for (i in c('Germany', 'South Korea', 'Italy')){
   plot = plot + ylim(0, 3.5)
   print(plot)
   
-  ggsave(paste('figures/estim_', toString(i), '.png', sep=''))
+  ggsave(paste('figures/estim_', toString(i), '.png', sep=''), width=10.4, height=6.15)
   
   
   np_clip <- function(x, a, b) {
@@ -108,7 +108,7 @@ for (i in c('Germany', 'South Korea', 'Italy')){
   plot = plot + labs(x='day', y='r(t)', title='Fitted r(t)')
   plot = plot + scale_color_colorblind()
   print(plot)
-  ggsave(paste('figures/rt_', toString(i), '.png', sep=''))
+  ggsave(paste('figures/rt_', toString(i), '.png', sep=''), width=10.4, height=6.15)
 }
 
 
