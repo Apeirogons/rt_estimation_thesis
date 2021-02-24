@@ -1,5 +1,5 @@
 #! /usr/bin/Rscript
-library('reticulate')
+#library('reticulate')
 library('ggplot2')
 library('EpiEstim')
 library('ggthemes')
@@ -13,10 +13,9 @@ source('ts_utils/rl_cobey.R')
 source('ts_utils/Rt.R')
 source('ts_utils/process_utils.R')
 
-theme_set(theme_bw())
-source_python('ts_utils/deconvolution.py')
+#source_python('ts_utils/deconvolution.py')
 source('base_params.R')
-
+source('ggplot_params.R')
 
 for (i in c('process_1', 'deterministic')){
   seir = read.csv(paste('seir/', i, '.csv', sep=''))

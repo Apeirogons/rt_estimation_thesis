@@ -9,3 +9,4 @@ seir/*
 *.out
 *.pdf
 *.gz
+logs/*

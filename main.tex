@@ -11,7 +11,7 @@
 
 \title{$\nR$(t) and r(t) Estimation}
 \author{Matthew So}
-\date{February 2021}
+\date{2021}
 
 \begin{document}
 
@@ -27,9 +27,10 @@ This project focuses on methods to estimate $\nR(t)$ and $r(t)$ from epidemiolog
 \begin{enumerate}
     \item Modelling. Specifically, real-world incidence data appears to have periodicity, which I hypothesize is due to weekday effects in observations. The SEIR-based model discussed later specifically generates data with similar weekly spikes in observations.
     \item Smoothing. Real-world data is noisy, and smoothing can both reduce the noise level and remove the aforementioned periodic effects. 
-    \item Comparison of $\nR(t)$ estimation methods, including "Shifts". It was hypothesized by Jonathan Dushoff that using the Wallinga-Teunis cohort $\nR(t)$ estimation method on symptomatic incidence data would allow for an approximate estimate of the case $\nR(t)$. The standard method in this case is the Cori $\nR(t)$ method, which is explicitly supposed to model case $\nR(t)$
-    \item Comparison of shifting curves and deconvolution to reconstruct the \textit{incidence of infection} curve from the \textit{incidence of symptoms} or \textit{symptomatic incidence} curve. A preprint by the Cobey Lab \cite{Gostic} indicates that, given an ideal world, deconvolution is the more appropriate option; however, is this feasible given a noisy and periodic world? 
+    \item Comparison of $\nR(t)$ estimation methods, including "Shifts". It was hypothesized by Jonathan Dushoff \cite{DushoffHypothesis} that using the Wallinga-Teunis \cite{WallingaTeunis} cohort $\nR(t)$ estimation method on symptomatic incidence data would allow for an approximate estimate of the case $\nR(t)$. The standard method in this case is the Cori $\nR(t)$ method, which is explicitly supposed to model case $\nR(t)$ \cite{Cori}.
+    \item Comparison of shifting curves and deconvolution to reconstruct the \textit{incidence of infection} curve from the \textit{incidence of symptoms} or \textit{symptomatic incidence} curve. A suggestion by the Cobey Lab \cite{Gostic} indicates that, given an ideal world, deconvolution is the more appropriate option; however, is this feasible given a noisy and periodic world? 
 \end{enumerate}
+
 
 \section{Modelling}
 
@@ -39,10 +40,20 @@ As real-world COVID-19 data has clear "spiky" periodicity, it is likely that the
 \clearpage
 \begin{figure}
     \centering
-    \includegraphics[scale=0.4]{figures/real_dataviz.png}
-    \caption{Real-world data has spiky and periodic effects. Data taken from Our World in Data, Canada and US daily case data.}
+    \includegraphics[scale=0.5]{figures/real_dataviz.png}
+    \caption{Real-world data has spiky and periodic effects. Data taken from Our World in Data, Canada and US daily case data \cite{OWID}.}
     \label{fig:my_label}
 \end{figure}
+
+\clearpage
+\begin{figure}
+	\centering
+    \includegraphics[scale=0.25]{figures/United States_weekday.png}
+    \caption{Real-world data may show trends in incidence based on weekday. Each timeseries on this plot represents incidence for a different weekday. }
+    \label{fig:my_label}
+\end{figure}
+
+For example, in the US, Mondays appear to have, on average, the lowest incidence of any weekday.
 
 
 \subsection{About the model}
@@ -74,9 +85,9 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
 \begin{itemize}
     \item $\beta(t)$: Same meaning as in typical SEIR models.
     \item $\nR_0$: Implicitly used to define $\beta(t)$. Set to 2.1 with $t < 150$, 0.99 with $t<200$, 0.9 with $t<300$, else 1.2.
-    \item $baseObservationDist$: Probability density function of time for an infection to be observed. This PDF is modified based on the day of the week. Currently set to discrete lognormal distribution with mean=$e^{1.7}$ days, log-SD=0.5 
-    \item $incubationDist$: Probability density function of time to go from $E \rightarrow I$. Currently set to Currently set to discrete lognormal distribution with mean=$e^{1.63}$ days, log-SD=0.5 
-    \item $infectiousDist$: Probability density function of time to go from $I \rightarrow R$. (time spent infectious). Currently set to exponential distribution with mean=10 days. It has occurred to me that I was supposed to reduce this value, but I forgot.
+    \item $baseObservationDist$: Probability density function of time for an infection to be observed. This PDF is modified based on the day of the week. Currently set to discrete lognormal distribution with $\mu$=1.7, log-SD=0.5 
+    \item $incubationDist$: Probability density function of time to go from $E \rightarrow I$. Currently set to discrete lognormal distribution with $\mu$=1.63, log-SD=0.5. \cite{McAloon}
+    \item $infectiousDist$: Probability density function of time to go from $I \rightarrow R$. (time spent infectious). Currently set to exponential distribution with mean=10 days. It has occurred to me that I was supposed to reduce this value, but I forgot. 
     \item $\kappa$: 1/(dispersion parameter) in alternatively parameterized negative binomial distribution. \cite{NegBinom} $negBinom(mean, 0)$ is implemented as the Poisson. I chose 0 as the value of $\kappa$, implicitly making all instances of $negBinom$ actually $Poisson$.
     \item $negBinom$: Negative binomial distribution parameterized by (mean, $\kappa$). It has occurred to me that due to using this distribution rather than the binomial distribution, odd behavior could occur (for example, having more observations than people who are infected on a particular day).
     \item $dayScalers$: On each weekday, the probability of observation is multiplied by this value. Set to 1.2 for Monday and Tuesday and 1 otherwise. 
@@ -281,7 +292,7 @@ Similarly to the wavelet transform, the Fourier transform converts a timeseries 
 
 \section {$\nR(t)$ and $r(t)$ Estimation}
 \subsection{Cori $\nR(t)$ Estimation}
-The standard for estimating instantaneous $\nR(t)$. This method works extremely well for non-noisy/periodic data, and is also robust to noisy/periodic data due to having an intrinsic 7-day smoothing window. 
+The standard for estimating instantaneous $\nR(t)$ \cite{Cori}. This method works extremely well for non-noisy/periodic data, and is also robust to noisy/periodic data due to having an intrinsic 7-day smoothing window. 
 
 \clearpage
 \begin{figure}[h!]
@@ -292,7 +303,7 @@ The standard for estimating instantaneous $\nR(t)$. This method works extremely 
 
 
 \subsection{Wallinga-Teunis $\nR(t)$ Estimation}
-The standard for estimating case $\nR(t)$. This method also works very well for what it is intended to do, the estimation of case $\nR(t)$. However, this method reacts to changes in $\nR(t)$ slower than the Cori method, and the original "Shifts" idea does not appear to be better than simply taking a Cori estimate and shifting it instead. As case $\nR(t)$  is backward-convolved from instantaneous $\nR(t)$ by the generation interval distribution, I had an idea to deconvolve the WT estimates in order to obtain "faster" estimates of case $\nR(t)$. However, I haven't pursued this idea much further yet. This was implemented by using the EpiEstim WT estimation method on the observation data. I shifted this WT estimation forward by the mean time from infection to observation.
+The standard for estimating case $\nR(t)$ \cite{WallingaTeunis}. This method also works very well for what it is intended to do, the estimation of case $\nR(t)$. However, this method reacts to changes in $\nR(t)$ slower than the Cori method, and the original "Shifts" idea does not appear to be better than simply taking a Cori estimate and shifting it instead. As case $\nR(t)$  is backward-convolved from instantaneous $\nR(t)$ by the generation interval distribution, I had an idea to deconvolve the WT estimates in order to obtain "faster" estimates of case $\nR(t)$. However, I haven't pursued this idea much further yet. This was implemented by using the EpiEstim WT estimation method on the observation data. I shifted this WT estimation forward by the mean time from infection to observation.
 
 \begin{figure}[h!]
     \centering
@@ -313,7 +324,7 @@ However, WT estimation performs well on its intended task.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[scale=0.3]{figures/wt_vs_true_deterministic.png}
+    \includegraphics[scale=0.4]{figures/wt_vs_true_deterministic.png}
     \caption{Comparison of WT method and true case $\nR(t)$ - deterministic simulation}
     \label{fig:my_label}
 \end{figure}
@@ -328,7 +339,7 @@ However, WT estimation performs well on its intended task.
 
 
 \subsection{Naive $r(t)$ Estimation}
-$r(t)$ can be defined as the logarithmic derivative of incidence. Therefore, simply smoothing the data and calculating the logarithmic derivative of incidence may be sufficient for calculating $r(t)$. I decided to apply N-day smoothing to the naive $r(t)$ estimates as well, in order to get a more stable estimate.
+$r(t)$ can be defined as the logarithmic derivative of incidence \cite{Gostic}. Therefore, simply smoothing the data and calculating the logarithmic derivative of incidence may be sufficient for calculating $r(t)$. I decided to apply N-day smoothing to the naive $r(t)$ estimates as well, in order to get a more stable estimate.
 
 
 \begin{figure}[h!]
@@ -488,16 +499,34 @@ I have applied the most promising methods (7-day smoothing, shifted Cori, and na
 \end{figure}
 
 
+\begin{thebibliography}{2}
+\bibitem{DushoffHypothesis}
+To be found
 
-\begin{thebibliography}{1}
-\bibitem{RLLoss}
-https://hal.inria.fr/inria-00070726/document
-    
+\bibitem{WallingaTeunis}
+Wallinga, J. (2004). Different Epidemic Curves for Severe Acute Respiratory Syndrome Reveal Similar Impacts of Control Measures. American Journal Of Epidemiology, 160(6), 509-516. https://doi.org/10.1093/aje/kwh255
+
+\bibitem{Cori}
+Cori, A., Ferguson, N., Fraser, C., \& Cauchemez, S. (2013). A New Framework and Software to Estimate Time-Varying Reproduction Numbers During Epidemics. American Journal Of Epidemiology, 178(9), 1505-1512. https://doi.org/10.1093/aje/kwt133
+
 \bibitem{Gostic}
-https://doi.org/10.1101/2020.06.18.20134858
+Gostic, K., McGough, L., Baskerville, E., Abbott, S., Joshi, K., \& Tedijanto, C. et al. (2020). Practical considerations for measuring the effective reproductive number, Rt. PLOS Computational Biology, 16(12), e1008409. https://doi.org/10.1371/journal.pcbi.1008409
+
+
+\bibitem{OWID}
+Roser, M., Ritchie, H., Ortiz-Ospina, E., \& Hasell, J. (2020). Coronavirus Pandemic (COVID-19). OurWorldInData.org. Retrieved 24 February 2021, from https://ourworldindata.org/coronavirus.
+
+\bibitem{McAloon}
+McAloon, C., Collins, Á., Hunt, K., Barber, A., Byrne, A., \& Butler, F. et al. (2020). Incubation period of COVID-19: a rapid systematic review and meta-analysis of observational research. BMJ Open, 10(8), e039652. https://doi.org/10.1136/bmjopen-2020-039652
+
 
 \bibitem{NegBinom}
-https://stat.ethz.ch/R-manual/R-devel/library/stats/html/NegBinomial.html
+R: The Negative Binomial Distribution. Stat.ethz.ch. (2021). Retrieved 24 February 2021, from https://stat.ethz.ch/R-manual/R-devel/library/stats/html/NegBinomial.html.
+
+\bibitem{RLLoss}
+Dey, N., Blanc-Féraud, L., Zimmer, C., Roux, P., Kam, Z., Olivo-Marin, J., \& Zerubia, J. (2004). 3D Microscopy Deconvolution using Richardson-Lucy Algorithm with Total Variation Regularization. INRIA. Retrieved from https://hal.inria.fr/inria-00070726/document
+    
+
 
 \end{thebibliography}
 \end{document}

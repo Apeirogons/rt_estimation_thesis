@@ -13,10 +13,9 @@ source('ts_utils/rl_cobey.R')
 source('ts_utils/Rt.R')
 source('ts_utils/process_utils.R')
 source('base_params.R')
+source('ggplot_params.R')
 
 use_condaenv('MachineLearning')
-theme_set(theme_bw())
-#theme_update(text = element_text(size=24))
 source_python('ts_utils/deconvolution.py')
 
 ########################################################################################3
@@ -33,7 +32,7 @@ plotter = function(seir,i){
   plot = ggplot(seir) 
   plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='1-smoothed symptomatic'), alpha=1) 
   plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
-  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-true incidence forward-convolved by weekly mean detection kernel'), alpha=0.75)
+  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-conv. true incidence'), alpha=0.75) #true incidence forward-convolved by weekly mean detection kernel
   plot = plot + scale_color_colorblind()
   plot = plot + labs(x='t', y='incidence', title='Wavelet smoothing')
   print(plot)
@@ -45,7 +44,7 @@ plotter = function(seir,i){
   plot = ggplot(seir) 
   plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='1-smoothed symptomatic'), alpha=1) 
   plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
-  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-true incidence forward-convolved by weekly mean detection kernel'), alpha=0.75)
+  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-conv. true incidence'), alpha=0.75)
   plot = plot + scale_color_colorblind()
   plot = plot + labs(x='t', y='incidence', title='7-day smoothing')
   print(plot)
@@ -58,7 +57,7 @@ plotter = function(seir,i){
   plot = ggplot(seir) 
   plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='1-smoothed symptomatic'), alpha=1) 
   plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
-  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-true incidence forward-convolved by weekly mean detection kernel'), alpha=0.75)
+  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-conv. true incidence'), alpha=0.75)
   plot = plot + scale_color_colorblind()
   plot = plot + labs(x='t', y='incidence', title='FFT smoothing')
   print(plot)

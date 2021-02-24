@@ -1,3 +1,6 @@
+## This file is stolen from Cobey Lab (URL)
+## but I added some regularization
+
 ## This function inputs observed incidence (numbers of cases, deaths, hospitalizations, etc. per day), and uses an adaptation of  Richardson-Lucy deconvolution to recover the underlying incidence curve. 
 library(magrittr)
 #install.packages('rlang')

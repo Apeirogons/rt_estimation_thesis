@@ -14,7 +14,7 @@ source('ts_utils/Rt.R')
 source('ts_utils/process_utils.R')
 
 use_condaenv('MachineLearning')
-theme_set(theme_bw())
+
 source_python('ts_utils/deconvolution.py')
 
 

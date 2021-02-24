@@ -1,6 +1,6 @@
 library(ggplot2)
 library(ggthemes)
-theme_set(theme_bw())
+source('ggplot_params.R')
 
 data = read.csv('data/Canada.csv')
 data$date = as.Date(data$date)

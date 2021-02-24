@@ -9,14 +9,13 @@ library('ggthemes')
 
 
 library('ggplot2')
-theme_set(theme_bw())
-theme_update(text = element_text(size=24))
+
 
 source('ts_utils/process_utils.R')
 source('ts_utils/process_noise_simulation.R')
 source('ts_utils/deterministic_simulation.R')
 source('base_params.R')
-
+source('ggplot_params.R')
 ########################################################################################3
 
 plotter = function(df, sim_title, width=10.4, height=6.15){
