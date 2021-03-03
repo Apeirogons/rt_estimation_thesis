@@ -4,12 +4,15 @@ library('ggthemes')
 theme_set(theme_bw(base_size=20))
 
 # https://stackoverflow.com/questions/57153428/r-plot-color-combinations-that-are-colorblind-accessible
-palette  <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
-                       "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 # Hardcoding this palette because I don't ever intend on using a different one in this project.
-transparent_palette <- function(transparency){
+transparent_palette <- function(transparency, palette=NULL){
   # transparency: vector of numeric between 0-1
+	if(is.null(palette){
+		palette  <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+			"#F0E442", "#0072B2", "#D55E00", "#CC79A7"
+		)
+	}
   new_palette = c()
   for(i in c(1:length(palette))){
    if (i <= length(transparency)){
@@ -19,7 +22,7 @@ transparent_palette <- function(transparency){
    else{
       alpha = 1
    }
-    
+
    alpha_hex_equiv = toupper(toString(as.hexmode(round(alpha*255))))
    new_palette = append(new_palette, paste(palette[i],alpha_hex_equiv, sep=''))
   }
