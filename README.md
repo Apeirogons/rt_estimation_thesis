@@ -19,3 +19,5 @@ Split the data.
 - Run all of the other R files except base_params.R.
 
 Alternatively, use the Makefile provided for all after-setup functions. You have to replace $r with your Rscript location, and if you're on Linux you will have to change del /f to rm.
+
+## Windows make: choco install make
