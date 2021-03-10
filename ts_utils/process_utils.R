@@ -1,31 +1,17 @@
 #! /usr/bin/Rscript
 library('deSolve')
-
 library('extraDistr')
 library('EpiEstim')
 library('poweRlaw')
 library('data.table')
 library('ggthemes')
-
 library('zoo')
+
+source('ts_utils/rl_cobey.R')
+
 n_day_smoother = function(data, N=7){
   return(rollmean(data, N, fill=NA, align='center'))
 }
-# Oh right that doesnt work correctly.
-#n_day_smoother = function(data, N=7){
-#  stopifnot(length(data) > N)
-#  means = c() 
-#  for(i in c(1:(length(data)-N))){
-#    
-#    subslice = data[i:(i+N)]
-#    print(subslice)
-#    means = append(means, mean(subslice))
-#    #  print(mean(subslice))
-#  }
-#  means = append(means, replicate(N, NA))
-#  shifted_means = data.table::shift(means, N/2)
-#  return(shifted_means)
-#}
 
 r_alt_nbinom = function(N, mean, k){
   if(k == 0){
@@ -75,6 +61,12 @@ get_detection_pdfs = function(detection_prob, detection_consts, infectious_pdf, 
   return(list(periodized_detections=periodized_detections, p_greaters = p_greaters, cumulative_time_to_recovery=cumulative_time_to_recovery))
 }
 
+pad = function(target, comparator){
+  stopifnot(length(target) <= length(comparator))
+  return (c(target, rep(NA, length(comparator) - length(target))))
+}
+
+
 extrapolate = function(seir, target, n_targets=50, n_extend=20){
   data_of_interest = seir[[target]]
   data_end = tail(seir, n_targets)
@@ -84,7 +76,6 @@ extrapolate = function(seir, target, n_targets=50, n_extend=20){
   
   last_t = data_end$X[length(data_end$X)]
   extrapolated = data.frame(X=c(last_t:(last_t+(n_extend-1))))
-  print( predict(extrapolation_model, extrapolated))
   extrapolated$interest = predict(extrapolation_model, extrapolated)
   
   data_of_interest = append(data_of_interest, extrapolated$interest)
@@ -94,12 +85,12 @@ extrapolate = function(seir, target, n_targets=50, n_extend=20){
   data_of_interest[is.na(data_of_interest)] = 0
   return(list(Xs=Xs, data=c(data_of_interest)))}
 
-#plot(cumulative_time_to_recovery, type='l')
-# these two numbers should be the same
-#sum(c(0:(length(cumulative_time_to_recovery)-1))*z)
-#sum(c(0:(length(incubation_pdf)-1))*incubation_pdf) +sum(c(0:(length(infectious_pdf)-1))*infectious_pdf)
+deconvolve = function(X, target, detection_pdf, N=7){
+  smoothed_target= n_day_smoother(target, N)
+  
+  rl = get_RL(smoothed_target[!is.na(smoothed_target)], X[!is.na(smoothed_target)], detection_pdf, stopping_n = 0.5, regularize=0.01, max_iter=100)
+  rl = pad(rl$RL_result[rl$time>0], X)
+  return(rl)
+}
 
-
-#plot(periodized_detections[[6]], type='l')
-
-
+shift = data.table::shift

@@ -1,13 +1,9 @@
 #! /usr/bin/Rscript
-library('deSolve')
-
 library('extraDistr')
 library('EpiEstim')
 library('poweRlaw')
-library('data.table')
+library('tidyverse')
 library('ggthemes')
-
-
 library('ggplot2')
 
 
@@ -19,24 +15,22 @@ source('ggplot_params.R')
 ########################################################################################3
 
 plotter = function(df, sim_title, width=10.4, height=6.15){
-  plot = ggplot(df) 
-  plot = plot + geom_line(aes(x=t, y=expected_incidence, color='expected_incidence'), alpha=0.5) 
-  plot = plot + geom_line(aes(x=t, y=obs_symptomatic_incidence, color='obs_symptomatic_incidence'), alpha=0.5) 
-  plot = plot + scale_color_colorblind() 
-  plot = plot + labs(x='t', y='incidence', title=paste(sim_title, ' incidence', sep=''), fill='')
+  df = df %>% rename(X=t)
+  labels = labs(x='t', y='incidence', title=paste(sim_title, ' incidence', sep=''), col='')
+  plot = create_plot(df, c('expected_incidence','obs_symptomatic_incidence'),  c('expected incidence','symptomatic incidence'), c(0.5, 0.5), labels)
   print(plot)
   ggsave(paste('figures/', sim_title, '_incidence.png', sep=''), width=width, height=height)
   
-  plot = ggplot(df) +  geom_line(aes(x=t, y=E, color='E'), alpha=0.5)+ geom_line(aes(x=t, y=I, color='I'), alpha=0.5)+  scale_color_colorblind()
-  plot = plot + labs(x='t', y='Prevalent cases', title=paste(sim_title, ' prevalence', sep=''), fill='')
+  
+  labels = labs(x='t', y='Prevalent cases', title=paste(sim_title, ' prevalence', sep=''), col='')
+  plot = create_plot(df, c('E','I'),  c('E','I'), c(0.5, 0.5), labels)
   print(plot)
   ggsave(paste('figures/', sim_title, '_prevalence.png', sep=''), width=width, height=height)
   
-  plot = ggplot(df) + geom_line(aes(x=t, y=Rt, color='Rt inst.'), alpha=0.5) + geom_line(aes(x=t, y=Rt_case, color='Rt case'), alpha=0.5) 
-  plot = plot + labs(x='t', y='R(t)',  title=paste(sim_title, ' Rt', sep=''), fill='')
-  plot = plot + scale_color_colorblind() 
-
+  labels = labs(x='t', y='R(t)',  title=paste(sim_title, ' Rt', sep=''), col='')
+  plot = create_plot(df, c('Rt', 'Rt_case'), c('Rt inst.', 'Rt_case'), c(0.5, 0.5), labels)
   print(plot)
+  
   ggsave(paste('figures/', sim_title, '_Rt.png', sep=''), width=width, height=height)}
 
 
@@ -55,7 +49,7 @@ plotter(df, 'Fully deterministic')
 
 
 
-for(i in c(1:5)){
+for(i in c(1:3)){
   df = simulate_deterministic(10000000, 10, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob, noise='observation')
 
   write.csv(df, paste('seir/simple_observation_', toString(i), '.csv', sep=''))
@@ -63,7 +57,7 @@ for(i in c(1:5)){
   plotter(df, paste('simple_observation_', toString(i), sep=''))
 }
 
-for(i in c(1:5)){
+for(i in c(1:3)){
   df = simulate_process(10000000, 10, b, t, incubation_pdf, infectious_pdf, periodized_detections, p_greaters, cumulative_time_to_recovery, detection_prob)
   
   write.csv(df, paste('seir/process_', toString(i), '.csv', sep=''))

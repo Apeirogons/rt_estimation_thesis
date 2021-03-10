@@ -37,10 +37,16 @@ logs/real_world_rt_estim.out: real_world_rt_estim.R base_params.R ggplot_params.
 logs/rt_estim_2.out: rt_estim_2.R base_params.R ggplot_params.R logs/seir.out logs/requirements.out
 	$r $< > $@
 
+logs/variants_mli.out: variants_mli.R
+	$r $< > $@
+
+logs/variants_plots.out: variants_plots.R base_params.R ggplot_params.R logs/variants_mli.out
+	$r $< > $@
+
 logs/weekday_plots.out: weekday_plots.py logs/seir.out logs/requirements.out
 	python $< > $@
 
-main.pdf: main.tex logs/requirements.out logs/seir.out logs/smoothing_figures.out logs/wt.out logs/deconvolution_comparison.out logs/R0.out logs/real_world_viz.out logs/real_world_rt_estim.out logs/rt_estim_2.out logs/weekday_plots.out
+main.pdf: main.tex logs/requirements.out logs/seir.out logs/smoothing_figures.out logs/wt.out logs/deconvolution_comparison.out logs/R0.out logs/real_world_viz.out logs/real_world_rt_estim.out logs/rt_estim_2.out logs/weekday_plots.out logs/variants_plots.out
 	del /f main.pdf
 	pdflatex $< 
 

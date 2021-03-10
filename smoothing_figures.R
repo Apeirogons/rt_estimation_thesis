@@ -3,7 +3,6 @@ library('reticulate')
 library('ggplot2')
 library('EpiEstim')
 library('ggthemes')
-library(data.table)
 library('extraDistr')
 library('poweRlaw')
 library('zoo')
@@ -29,37 +28,21 @@ plotter = function(seir,i){
   smoothed_symptomatic_incidence=waveletted
   seir$smoothed_symptomatic_incidence = smoothed_symptomatic_incidence
   seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
-  plot = ggplot(seir) 
-  plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='1-smoothed symptomatic'), alpha=1) 
-  plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
-  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-conv. true incidence'), alpha=0.75) #true incidence forward-convolved by weekly mean detection kernel
-  plot = plot + scale_color_colorblind()
-  plot = plot + labs(x='t', y='incidence', title='Wavelet smoothing')
+  labels =labs(x='t', y='incidence', title='Wavelet smoothing', col='')
+  plot = create_plot(seir, c('smoothed_symptomatic_incidence', 'obs_symptomatic_incidence', 'convolved_expected'), c('smoothed_symptomatic_incidence', 'obs_symptomatic_incidence', 'convolved_expected'), c(1, 0.25, 0.75), labels)
   print(plot)
   ggsave(paste('figures/wavelet_smooth', toString(i), '.png'), width=10.4, height=6.15)
   
   seir$smoothed_symptomatic_incidence = n_day_smoother(seir$obs_symptomatic_incidence)
-  
-  seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
-  plot = ggplot(seir) 
-  plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='1-smoothed symptomatic'), alpha=1) 
-  plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
-  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-conv. true incidence'), alpha=0.75)
-  plot = plot + scale_color_colorblind()
-  plot = plot + labs(x='t', y='incidence', title='7-day smoothing')
+  labels =labs(x='t', y='incidence', title='7-day smoothing', col='')
+  plot = create_plot(seir, c('smoothed_symptomatic_incidence', 'obs_symptomatic_incidence', 'convolved_expected'), c('smoothed_symptomatic_incidence', 'obs_symptomatic_incidence', 'convolved_expected'), c(1, 0.25, 0.75), labels)
   print(plot)
   ggsave(paste('figures/7day_smooth_', toString(i), '.png'), width=10.4, height=6.15)
 
   
   seir$smoothed_symptomatic_incidence = fft_filter(seir$obs_symptomatic_incidence, 7)
-  
-  seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
-  plot = ggplot(seir) 
-  plot = plot + geom_line(aes(x=X, y=smoothed_symptomatic_incidence, color='1-smoothed symptomatic'), alpha=1) 
-  plot = plot + geom_line(aes(x=X, y=obs_symptomatic_incidence, color='2-observed symptomatic'), alpha=0.25) 
-  plot = plot + geom_line(aes(x=X, y=convolved_expected, color='3-conv. true incidence'), alpha=0.75)
-  plot = plot + scale_color_colorblind()
-  plot = plot + labs(x='t', y='incidence', title='FFT smoothing')
+  labels =labs(x='t', y='incidence', title='FFT smoothing', col='')
+  plot = create_plot(seir, c('smoothed_symptomatic_incidence', 'obs_symptomatic_incidence', 'convolved_expected'), c('smoothed_symptomatic_incidence', 'obs_symptomatic_incidence', 'convolved_expected'), c(1, 0.25, 0.75), labels)
   print(plot)
   ggsave(paste('figures/fft_smooth_', toString(i), '.png'), width=10.4, height=6.15)
 }

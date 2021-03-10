@@ -3,11 +3,10 @@
 library('ggplot2')
 library('EpiEstim')
 library('ggthemes')
-library(data.table)
 library('extraDistr')
 library('poweRlaw')
 library('zoo')
-
+library('tidyverse')
 
 source('ts_utils/rl_cobey.R')
 source('ts_utils/Rt.R')
@@ -27,38 +26,41 @@ for (i in c('process_1', 'deterministic')){
   generation_int[1] = 0
   
   
-  obj = extrapolate(seir, 'obs_symptomatic_incidence')
-  data_of_interest = obj$data
-  wt_symptomatic = wt_estimation(data_of_interest, generation_int) 
-  wt_symptomatic$`Mean(R)` = data.table::shift(wt_symptomatic$`Mean(R)`, mean_detection) #-1*mean_detection)
-  
-  plot = ggplot(wt_symptomatic)
-  plot =  plot + geom_line(data=wt_symptomatic, aes(x=mean_t, y=`Mean(R)`, color='1. WT Shifts - symptomatic'), alpha=1)
-  
   
   obj = extrapolate(seir, 'obs_symptomatic_incidence')
   data_of_interest = obj$data
-  cori = cori_estimation(data_of_interest, generation_int) 
-  cori$`Mean(R)` = data.table::shift(cori$`Mean(R)`, -1*mean_detection)
-  plot =  plot + geom_line(data=cori, aes(x=mean_t, y=`Mean(R)`, color='2. Cori - symptomatic'), alpha=0.5)
+  wt_symptomatic = wt_estimation(data_of_interest, generation_int, mean_detection) %>%
+    select(c('mean_t', 'Mean(R)'))
+
+  obj = extrapolate(seir, 'obs_symptomatic_incidence')
+  data_of_interest = obj$data
+  cori = cori_estimation(data_of_interest, generation_int, -1*mean_detection)  %>%
+    select(c('mean_t', 'Mean(R)'))
   
+  joined = inner_join(wt_symptomatic, cori, by='mean_t')
+  seir_join = seir %>%
+    select(c('X', 'Rt', 'Rt_case')) %>%
+    rename(mean_t = X) 
+
+  ggplot_df = inner_join(joined, seir_join) %>%
+    rename(wt=`Mean(R).x`, cori=`Mean(R).y`, X=mean_t)  %>%
+    mutate(wt_actual = shift(wt, -1*mean_detection)) 
+
+  
+  labels = labs(x='date', y='R(t) inst.', title='Comparison of WT shifts and Cori', col='Estimation method')
+  plot = create_plot(ggplot_df, c('wt', 'cori', 'Rt'), c('WT shifts', 'Cori', 'True Rt inst.'), c(0.75, 0.75, 0.75), labels)
   plot = plot + xlim(0, 400)
-  plot = plot + geom_line(data=seir, aes(x=X, y=Rt, color='3. True Inst. Rt'), alpha=0.5)
-  plot = plot + ylim(c(0,3)) + scale_color_colorblind()
+  plot = plot + ylim(c(0,3))
   print(plot)
+  
   ggsave(paste('figures/wt_comparison_', toString(i), '.png', sep=''), width=10.4, height=6.15)
   
-  
-  
-  wt_symptomatic$`Mean(R)` = data.table::shift(wt_symptomatic$`Mean(R)`, -1*mean_detection)
-  
-  plot = ggplot(wt_symptomatic)
-  plot = plot + geom_line(data=wt_symptomatic, aes(x=mean_t, y=`Mean(R)`, color='WT - symptomatic'))
-  plot = plot + geom_line(data=seir, aes(x=X, y=Rt_case, color='True Case Rt'))
-  plot = plot + geom_line(data=seir, aes(x=X, y=Rt, color='True Inst. Rt'), alpha=0.5)
-  plot = plot + ylim(c(0,3)) + scale_color_colorblind()
+  labels = labs(x='date', y='R(t)', col='Estimation method')
+  plot = create_plot(ggplot_df, c('wt_actual', 'Rt', 'Rt_case'), c('WT', 'Rt inst.', 'Rt case'), c(0.75, 0.75, 0.75), labels)
+  plot = plot + ylim(c(0,3)) 
   plot = plot + xlim(0, 300)
   print(plot)
+  
   ggsave(paste('figures/wt_vs_true_', toString(i), '.png', sep=''), width=10.4, height=6.15)
 }
 

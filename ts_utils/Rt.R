@@ -1,21 +1,7 @@
 library('EpiEstim')
+source('ts_utils/process_utils.R')
 
-
-n_day_smoother = function(data, N=7){
-  stopifnot(length(data) > N)
-  means = c() 
-  for(i in c(1:(length(data)-N))){
-    
-    subslice = data[i:(i+N)]
-    means = append(means, mean(subslice))
-    #  print(mean(subslice))
-  }
-  means = append(means, replicate(N, NA))
-  shifted_means = data.table::shift(means, N/2)
-  return(shifted_means)
-}
-
-cori_estimation = function(i, generation_int){
+cori_estimation = function(i, generation_int, shift_amt=0){
   # Cori methods
   method='non_parametric_si'
   incidence = c(i)
@@ -24,10 +10,11 @@ cori_estimation = function(i, generation_int){
   cori_true = estimate_R(incidence, method=method, config=config)
   cori_true = as.data.frame(cori_true$R)
   cori_true$mean_t = (cori_true$t_start + cori_true$t_end)/2
+  cori_true$`Mean(R)`= shift(cori_true$`Mean(R)`, shift_amt)
   return(cori_true)
 }
 
-wt_estimation = function(i, generation_int){
+wt_estimation = function(i, generation_int, shift_amt=0){
   method='non_parametric_si'
   incidence = c(floor(i))
   incidence = floor(incidence)
@@ -35,7 +22,17 @@ wt_estimation = function(i, generation_int){
   config = make_config(incid=incidence, method = method, si_distr=generation_int)
   config$n_sim = 10
   wt = wallinga_teunis(incidence, method=method, config=config)
-  wt_deconvolved = as.data.frame(wt$R)
-  wt_deconvolved$mean_t = (wt_deconvolved$t_start + wt_deconvolved$t_end)/2
-  return(wt_deconvolved)
+  wt = as.data.frame(wt$R)
+  wt$mean_t = (wt$t_start + wt$t_end)/2
+  wt$`Mean(R)`=shift(wt$`Mean(R)`, shift_amt)
+  
+  return(wt)
+}
+
+rt_estimation = function(incidence,shift_amt = 0){
+  rt_smoothed = diff(log(incidence))
+  rt_smoothed = rollapply(rt_smoothed, 7, mean, fill=NA, align='center')
+  rt_smoothed = data.table::shift(rt_smoothed, shift_amt)
+  rt_smoothed = pad(rt_smoothed, incidence)
+  return(rt_smoothed)
 }
