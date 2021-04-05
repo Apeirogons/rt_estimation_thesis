@@ -17,10 +17,23 @@ source('ggplot_params.R')
 
 desired = c('deterministic')
 simple_obs = c()
-for(i in c(1:3)){
+for(i in c(1:2)){
   simple_obs = append(simple_obs, paste('simple_observation_', toString(i),sep=''))
 }
 desired = append(desired, simple_obs)
+
+use_condaenv('MachineLearning')
+source_python('ts_utils/deconvolution.py')
+
+
+#rt_estimation = function(incidence, shift_amt = 0){
+#  rt_smoothed = sg_filter(incidence, window_length=19, polyorder=0)
+
+#  rt_smoothed = data.table::shift(rt_smoothed, shift_amt)
+#  rt_smoothed = pad(rt_smoothed, incidence)
+#  return(rt_smoothed)
+#}
+
 
 for(i in desired){
   print(i)
@@ -42,14 +55,13 @@ for(i in desired){
   data_of_interest = obj$data
   cori_obs = cori_estimation(data_of_interest, generation_int, -1*mean_detection) 
 
-  labels =  labs(x='date', y='R(t)', title=paste('Cori - ', i))
+
   ggplot_df = data.frame(X=cori_smoothed$mean_t, smoothed=cori_smoothed$`Mean(R)`, obs = cori_obs$`Mean(R)`, expected = cori_expected$`Mean(R)`)
   
   true_rt = seir$Rt[is.element(seir$t, ggplot_df$X)]
   ggplot_df$true = pad(true_rt, ggplot_df$X)
-  
-  plot = create_plot(ggplot_df, c('true', 'smoothed', 'obs', 'expected'), c('true', 'smoothed', 'obs', 'expected'), c(0.75, 0.5, 0.5, 0.5), labels)
-  
+  labels =  labs(x='date', y='R(t)', title=paste('Cori R(t) estimation'), col='')
+  plot = create_plot(ggplot_df, c('true', 'smoothed', 'obs', 'expected'),  c('True R(t)', 'Expected incidence of infection', 'Shifted symptomatic', 'Deconvolved symptomatic'), c(0.75, 0.5, 0.5, 0.5), labels, 'top_right')
   plot = plot + ylim(0, 3)
   plot = plot + xlim(0, seir$X[length(seir$X)])
   print(plot)
@@ -67,8 +79,8 @@ for(i in desired){
   
   ggplot_df = data.frame(X = seir$X, rt_smoothed = rt_smoothed, rt_actual=rt_actual)
 
-  labels = labs(x='day', y='r(t)', title='Fitted r(t)')
-  plot = create_plot(ggplot_df, c('rt_smoothed', 'rt_actual'), c('rt symptomatic', 'rt actual'), c(0.75, 0.75), labels)
+  labels = labs(x='day', y='r(t) (1/day)', title='Fitted r(t)', col='')
+  plot = create_plot(ggplot_df, c('rt_smoothed', 'rt_actual'), c('Estimated', 'Actual'), c(0.75, 0.75), labels, 'bottom_right')
   plot = plot + ylim(c(-0.1, 0.1))
   print(plot)
   ggsave(paste('figures/rt_', toString(i), '.png', sep=''), width=width, height=height)

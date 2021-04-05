@@ -19,7 +19,7 @@ ggplot(ggplot_df) +
   geom_line(data=ggplot_df, aes(x=t, y=R0), alpha=1) +
   xlim(0, 400) +
   scale_color_colorblind() +
-  labs(title='R0(t)')
+  labs(title='R0(t)', x='date')
 
 
 ggsave(paste('figures/R0.png', sep=''), width=width, height=height)

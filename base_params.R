@@ -13,9 +13,7 @@ source('ts_utils/rl_cobey.R')
 source('ts_utils/Rt.R')
 source('ts_utils/process_utils.R')
 
-use_condaenv('MachineLearning')
 
-source_python('ts_utils/deconvolution.py')
 
 
 
@@ -60,8 +58,15 @@ inc = dislnorm$new()
 inc$setPars(c(1.63, 0.5))
 
 # Infectious period = recovery time
+#https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7409948/
 inf = disexp$new()
-inf$setPars(c(1/10))
+inf$setPars(c(1/13))
+
+
+#inf= dislnorm$new()
+#inf$setPars(c(1.56, 0.5))#2.56
+#inf$setXmin(0)
+#plot(dist_pdf(inf, q=indices))
 
 
 # Detection distribution
@@ -89,9 +94,11 @@ periodized_detections = temp$periodized_detections
 p_greaters = temp$p_greaters
 cumulative_time_to_recovery = temp$cumulative_time_to_recovery
 generation_int = convolve(incubation_pdf, rev(infectious_pdf), type='open')
+generation_int[generation_int<0] = 0
 
 #df = data.frame(t=indices, incubation=incubation_pdf, infectious = infectious_pdf)
 #write.csv(df, 'incubation_and_infectious.csv')
 mean_generation = sum(c(0:(length(generation_int)-1))*generation_int)
 mean_detection = sum(c(0:(length(detection_pdf)-1))*detection_pdf)
+
 

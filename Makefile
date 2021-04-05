@@ -1,5 +1,6 @@
 target: main.pdf 
 
+#r = Rscript
 r = C:\Users\somat\Documents\R\R-4.0.2\bin\Rscript.exe
 
 logs/logs.out logs:

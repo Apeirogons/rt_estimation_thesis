@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize, dual_annealing, basinhopping
 import os 
-from scipy.fftpack import rfft, irfft, fftfreq, fft, ifft
-#from scipy.special import gamma
-
+from scipy.signal import savgol_filter
 import pywt
 
+def sg_filter(x, window_length, polyorder, deriv=0, delta=1.0, axis=-1, mode='interp', cval=0.0):
+    filtered = savgol_filter(x, window_length=int(window_length), polyorder=int(polyorder), deriv=int(deriv), delta=delta, axis=int(axis), mode=mode, cval=cval)
+    return filtered
+    
 def wavelet_filter(symptomatic_incidence, c, wavelet='sym2', cutoff=15):
     dec = [np.asarray(x) for x in pywt.wavedec(symptomatic_incidence, wavelet)]
     print('There are ' + str(len(dec)) + ' levels.')

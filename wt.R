@@ -48,7 +48,7 @@ for (i in c('process_1', 'deterministic')){
 
   
   labels = labs(x='date', y='R(t) inst.', title='Comparison of WT shifts and Cori', col='Estimation method')
-  plot = create_plot(ggplot_df, c('wt', 'cori', 'Rt'), c('WT shifts', 'Cori', 'True Rt inst.'), c(0.75, 0.75, 0.75), labels)
+  plot = create_plot(ggplot_df, c('wt', 'cori', 'Rt'), c('WT shifts', 'Cori', 'True Rt inst.'), c(0.75, 0.75, 0.75), labels, 'top_right')
   plot = plot + xlim(0, 400)
   plot = plot + ylim(c(0,3))
   print(plot)
@@ -56,7 +56,7 @@ for (i in c('process_1', 'deterministic')){
   ggsave(paste('figures/wt_comparison_', toString(i), '.png', sep=''), width=10.4, height=6.15)
   
   labels = labs(x='date', y='R(t)', col='Estimation method')
-  plot = create_plot(ggplot_df, c('wt_actual', 'Rt', 'Rt_case'), c('WT', 'Rt inst.', 'Rt case'), c(0.75, 0.75, 0.75), labels)
+  plot = create_plot(ggplot_df, c('wt_actual', 'Rt', 'Rt_case'), c('WT', 'Rt inst.', 'Rt case'), c(0.75, 0.75, 0.75), labels, 'top_right')
   plot = plot + ylim(c(0,3)) 
   plot = plot + xlim(0, 300)
   print(plot)

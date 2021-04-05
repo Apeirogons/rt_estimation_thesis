@@ -22,10 +22,10 @@ for (i in c('process_1', 'deterministic')){
   seir$shifted_symptomatic = shift(n_day_smoother(seir$obs_symptomatic_incidence), -1*mean_detection)
   
   select_cols = c('deconvolved', 'shifted_symptomatic', 'scaled_expected_incidence') 
-  label_cols =  c('deconvolved symptomatic', 'shifted symptomatic', 'expected incidence') 
-  labels =  labs(x='time', y='incidence', title='Deconvolution vs shift', col='Incidence type')
+  label_cols =  c('deconvolved observed', 'shifted observed', 'expected incidence of infection') 
+  labels =  labs(x='time', y='incidence', title='Comparison of deconvolution and shifting', col='Incidence type')
 
-  plot = create_plot(seir, select_cols, label_cols, c(0.75, 0.75, 0.75), labels)
+  plot = create_plot(seir, select_cols, label_cols, c(0.75, 0.75, 0.75), labels, 'bottom_right')
   print(plot)
   ggsave(paste('figures/deconv_', toString(i), '.png', sep=''), width=width, height=height)
 
@@ -53,10 +53,11 @@ for (i in c('process_1', 'deterministic')){
 
 
   #  pivot_longer(cols=!mean_t)
-  labels = labs(x='time', y='R(t)', title='', col='Incidence type')
+  labels = labs(x='time', y='R(t)', title='Comparison of Cori R(t) estimation methods', col='')
   
-  plot = create_plot(ggplot_df, c('true', 'expected', 'obs', 'rl'),  c('true', 'expected', 'obs', 'rl'), c(1, 0.75, 0.75, 0.75), labels) +
-    ylim(0, 3)
+  plot = create_plot(ggplot_df, c('true', 'expected', 'obs', 'rl'),  c('True R(t)', 'Expected incidence of infection', 'Shifted observed', 'Deconvolved observed'), c(1, 0.5, 0.5, 0.5), labels, 'top_right') +
+    ylim(0, 3) +
+    xlim(0, length(seir$X))
   print(plot)
   
   ggsave(paste('figures/estim_deconv_', toString(i), '.png', sep=''), width=width, height=height)
