@@ -4,13 +4,13 @@ source('ts_utils/filter.R')
 source('base_params.R')
 source('ggplot_params.R')
 
-library('reticulate')
+
 
 ########################################################################################3
 
 plotter = function(seir,i, title='', show_ribbon = FALSE){
   z = seir$obs_symptomatic_incidence
-  filtered = linear_filter(seir$obs_symptomatic_incidence, level=0.5)
+  filtered = linear_filter(seir$obs_symptomatic_incidence)
   seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402]#c(, NA* c(1:(length(total_delay_pdf)-1)))
 
 

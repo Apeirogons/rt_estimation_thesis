@@ -1,6 +1,6 @@
 
 # For N=7, this has been confirmed to be equivalent to scipy (well with some precision problems at low incidence, but w/e)
-linear_filter = function(incidence, N=7, level=0.99){
+linear_filter = function(incidence, N=7, level=0.95){
   linear_filter_base = function(i){
     temp_df = data.frame(x=c(1:length(i)), y = i)
     temp_df = temp_df[!is.infinite(temp_df$y),]

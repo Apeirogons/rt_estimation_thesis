@@ -11,7 +11,7 @@ source('ts_utils/rt.R')
 source('ts_utils/filter.R')
 source('base_params.R')
 source('ggplot_params.R')
-library('reticulate')
+
 
 
 i=15
@@ -27,6 +27,7 @@ data <- read.csv('data/Canada.csv') %>%
   select(c('date', 'new_cases_per_million')) %>%
   mutate(date=as.Date(date), count = new_cases_per_million*37590000/1000000)
 
+filtered = linear_filter(data$count)
 
 
 

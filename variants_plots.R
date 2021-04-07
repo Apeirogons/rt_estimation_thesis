@@ -11,7 +11,7 @@ source('ts_utils/rt.R')
 source('ts_utils/filter.R')
 source('base_params.R')
 source('ggplot_params.R')
-library('reticulate')
+
 
 
 i=7

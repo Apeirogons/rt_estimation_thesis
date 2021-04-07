@@ -1,5 +1,4 @@
 #! /usr/bin/Rscript
-library('reticulate')
 library('ggplot2')
 library('EpiEstim')
 library('ggthemes')
