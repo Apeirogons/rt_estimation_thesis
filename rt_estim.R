@@ -9,8 +9,7 @@ library('zoo')
 
 # r(t) defined on the left side: that is, the change of incidence from one day to next (not from day before to that day)
 
-source('ts_utils/rl_cobey.R')
-source('ts_utils/Rt.R')
+source('ts_utils/rt.R')
 source('ts_utils/process_utils.R')
 source('ts_utils/filter.R')
 
@@ -37,10 +36,10 @@ seir$high_smoothed = filtered[,'upr']
 
 seir$convolved_expected = convolve(seir$scaled_true_incidence, rev(detection_pdf), type='open')[1:402] #c(, NA* c(1:(length(total_delay_pdf)-1)))
 
-
+###############################################################################################################################################
 
 L = length(seir$scaled_expected_incidence)
-rt_actual = diff(seir$scaled_expected_incidence)/seir$scaled_expected_incidence[1:(L - 1)]
+rt_actual = c(diff(log(seir$scaled_expected_incidence))) #diff(seir$scaled_expected_incidence)/seir$scaled_expected_incidence[1:(L - 1)]
 rt_actual = c(rt_actual, NA) # append NA at end of sequence as it is not defined
 rt_actual[rt_actual == Inf] = NA
 rt_actual[rt_actual == -Inf] = NA
@@ -56,6 +55,11 @@ plot = create_plot(ggplot_df, c('rt_smoothed_normal', 'rt_actual'), c('Estimated
 plot = plot + ylim(c(-0.1, 0.1))
 
 plot = plot + geom_ribbon(data=ggplot_df, aes(x=X, ymin=rt_lower, ymax=rt_upper), alpha=0.3, inherit.aes = FALSE)
+
+in_ci = Reduce('&', list((ggplot_df$rt_actual >= ggplot_df$rt_lower), (ggplot_df$rt_actual <= ggplot_df$rt_upper)))
+in_ci = in_ci[!is.na(in_ci)]
+print(sum(in_ci)/length(in_ci))
+
 print(plot)
 ggsave(paste('figures/rt_7_', toString(i), '.png', sep=''), width=width, height=height)
 
@@ -73,4 +77,8 @@ plot = plot + ylim(c(-0.1, 0.1))
 
 plot = plot + geom_ribbon(data=ggplot_df, aes(x=X, ymin=rt_lower, ymax=rt_upper), alpha=0.3, inherit.aes = FALSE)
 print(plot)
+
+in_ci = Reduce('&', list((ggplot_df$rt_actual >= ggplot_df$rt_lower), (ggplot_df$rt_actual <= ggplot_df$rt_upper)))
+in_ci = in_ci[!is.na(in_ci)]
+print(sum(in_ci)/length(in_ci))
 ggsave(paste('figures/rt_15_', toString(i), '.png', sep=''), width=width, height=height)

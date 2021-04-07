@@ -9,66 +9,42 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \overfullrule=0pt
 
-\title{$\nR$(t) and r(t) Estimation}
-\author{Matthew So}
-\date{2021}
+\title{A filtering approach to estimation of the epidemic exponential growth rate r(t) from incidence timeseries}
+\author{Matthew So, Jonathan Dushoff}
+\date{April 2021}
 
 \begin{document}
 
 \maketitle
-
-
-
 \tableofcontents
 
-\section{Rationale}
-This project focuses on methods to estimate $\nR(t)$ and $r(t)$ from epidemiological incidence time-series data. $\nR(t)$ is the time-varying reproductive number, equal to the number of expected infections caused by any given infected individual. $r(t)$ is the speed of infection, equal to the daily proportion increase in incidence. There are several ideas related to $\nR(t)$ estimation in this project:
-
-\begin{enumerate}
-    \item Modelling. Specifically, real-world incidence data appears to have periodicity, which may be due to weekday effects in observations. The SEIR-based model discussed later specifically generates data with similar weekly spikes in observations.
-    \item Smoothing. Real-world data is noisy, and smoothing can both reduce the noise level and remove the aforementioned periodic effects. 
-    \item Comparison of $\nR(t)$ estimation methods, including "Shifts". It was hypothesized by Jonathan Dushoff that using the Wallinga-Teunis \cite{WallingaTeunis} cohort $\nR(t)$ estimation method on appropriately shifted incidence data would allow for an approximate estimate of the case $\nR(t)$. A more standard method for case $\nR(t)$ measurement is the Cori $\nR(t)$ method.
-    \item Comparison of shifting curves and deconvolution to reconstruct the \textit{incidence of infection} curve from observations (which have an intrinsic time lag compared to the true incidence of infection). A suggestion by the Cobey Lab \cite{Gostic} indicates that, given an ideal world, deconvolution is the more appropriate option; however, is this feasible given a noisy and periodic world? 
-\end{enumerate}
-
+\section{Abstract}
+Outbreaks of infectious diseases such as the ongoing COVID-19 pandemic pose a threat to population health. In order to combat these outbreaks, it is important for public health authorities to understand how quickly an epidemic is spreading. One metric for studying epidemic spread is the exponential growth rate r(t). There currently exists few methods for estimating this metric using incidence data. We propose an estimation method that is conceptually simple,  easily implemented, and requires few priors on infection dynamics. This method involves filtering the raw observed incidence data with a Savitzky-Golay filter to remove periodicity and reduce noise, then using another Savitzky-Golay filter on the logarithm of the filtered incidence data to perform a logarithmic differentiation. This estimation method has been evaluated on a custom modified discrete-time SEIR model incorporating a separate periodic observation process resulting in a greater number of observations on certain days of the week. The proposed estimation method is effective at estimating r(t) in simulated data, even given periodic and noisy signals similar to those found in real-world data. Usage of this estimation method on real-world data results in qualitatively stable estimates. The proposed estimation method may make r(t) estimation quicker and more accurate, which may allow for better management of infectious disease outbreaks. Additionally, this modified SEIR model may generate timeseries more representative of real-world data, which can be used to improve other epidemiological parameter estimation methods that rely on incidence timeseries.
 
 \section{Modelling}
 
 \subsection{Rationale}
-Real-world COVID-19 data has clear, "spiky" periodicity. It is hypothesized in this work that this "spikiness" primarily reflects daily changes in observations. Any trends in infection, such as changes in $\beta(t)$, would be heavily smoothed by the incubation period; however, this is inconsistent with the consistent single-day spikes found in real data. 
+In order to evaluate any potential r(t) estimation method, we must have a ground truth r(t); therefore, we need a model for which we can obtain a ground truth r(t) estimate. While a standard SEIR model might seem to be a good choice, it lacks some dynamical features that are found in real-world data, including noise and periodicity. Therefore, an SEIR-like model was developed which contained these dynamical features. 
 
 \clearpage
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.4]{figures/real_dataviz.png}
-    \caption{Real-world data has spiky and periodic effects. Data taken from Our World in Data, Canada and US daily case data \cite{OWID}.}
-    \label{fig:my_label}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{figures/real_dataviz.png}
+\caption{Real-world COVID-19 incidence data contains noise and "spiky" periodicity. \cite{OWID}}
 \end{figure}
 
-\clearpage
-\begin{figure}
-	\centering
-    \includegraphics[scale=0.25]{figures/United States_weekday.png}
-    \caption{Real-world data may show trends in incidence based on weekday. Each timeseries on this plot represents incidence for a different weekday. }
-    \label{fig:my_label}
-\end{figure}
 
-For example, in the US, Mondays appear to have, on average, the lowest incidence of any weekday.
+It is hypothesized in this work that this "spikiness" primarily reflects daily changes in observations. Any trends in infection, such as changes in r(t), would be heavily smoothed by the incubation period; however, this is inconsistent with the consistent single-day spikes found in real data.
 
-Therefore, in order to effectively evaluate any potential improvements to $\nR(t)$ estimation methods, it is important to develop a model with periodic dynamics similar to that found in the real-world. 
+\subsection{Model Explanation}
 
 \subsection{About the model}
 The current model is a discrete-time model based on the SEIR framework, which also models weekday trends in observation data. The main idea behind the model is that the probability density function for an infectee's observation time is modified such that observation on a Monday (for example) is more likely than the other days.
 
-This model has three supported running modes, each related to how much noise is present in the model: fully deterministic, simple observation noise, and full dynamical noise. "Simple observation noise" determines the number of daily observations by sampling from some probability distribution, such that the expected proportion of people who will be observed is equal to a parameter \code{detectionProb}. There also exists an unsupported "generalized observation noise" mode, which implements the observation noise found in the simple mode and adds dynamical noise to observation transitions.
-
-For the purposes of this model, dynamical noise is defined by having to sample from a probability distribution to determine the time of a transition event; for example, sampling from an exponential distribution to determine a time for a $E \rightarrow I$ transition. ("Dynamical noise" is a synonym for "process noise", and is used for greater clarity in this text). Observation noise is defined by having to sample from a probability distribution to determine the number of individuals observed on a given day, given that the number of individuals who "could have" been observed on this day has already been previously decided.
-
 \subsection{Explanations for features in the model}
 
 \subsubsection{Conventions}
-The sum of two probability distributions $X$ and $Y$ is denoted as $X+Y$, and is computed as the convolution of their probability density functions. The expected value is denoted as $E[X]$. Temporary variables have self-explanatory names. Also, variables in \code{camelCase} are equivalent to variables named \code{like\_this}. 
-
+The sum of two probability distributions $X$ and $Y$ is denoted as $X+Y$, and is computed as the convolution of their probability density functions. The expected value is denoted as $E[X]$. Temporary variables have self-explanatory names.
 
 \subsubsection{State variable explanations}
 All state variables are initialized to 0 except $S \gets 10,000,000$. 
@@ -84,14 +60,14 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
 
 \subsubsection{Parameter/Function explanations}
 \begin{itemize}
-    \item $\beta(t)$: Same meaning as in typical SEIR models.
-    \item $\nR_0$: Implicitly used to define $\beta(t)$. Set to 2.1 with $t < 150$, 0.99 with $t<200$, 0.9 with $t<300$, else 1.2.
+    \item $\beta(t)$: Same meaning as in typical SEIR models. 
+    \item $\nR_0$: The basic reproductive number (that is, the reproductive number not scaled by $S/N$. Implicitly used to define $\beta(t)$. See results for details.
     \item \code{baseObservationDist}: Probability density function of time for an infection to be observed. This PDF is modified based on the day of the week. Currently set to discrete lognormal distribution with $\mu$=1.7, log-SD=0.5 
     \item \code{incubationDist}: Probability density function of time to go from $E \rightarrow I$. Currently set to discrete lognormal distribution with $\mu$=1.63, log-SD=0.5. \cite{McAloon}
-    \item \code{infectiousDist}: Probability density function of time to go from $I \rightarrow R$. (time spent infectious). Currently set to exponential distribution with mean=10 days. 
+    \item \code{infectiousDist}: Probability density function of time to go from $I \rightarrow R$. (time spent infectious). Currently set to exponential distribution with mean=10 days. (Note: only exponential distributions are currently supported. )
     \item $\kappa$: 1/(dispersion parameter) in an alternatively parameterized negative binomial distribution. \cite{NegBinom} $negBinom(mean, 0)$ is implemented as the Poisson. I chose 0 as the value of $\kappa$, implicitly making all instances of $negBinom$ actually $Poisson$.
     \item $negBinom$: Negative binomial distribution parameterized by (mean, $\kappa$). 
-    \item \code{dayScalers}: On each weekday, the probability of observation is multiplied by this value. Set to 1.2 for Monday and Tuesday and 1 otherwise. 
+    \item \code{dayScalers}: On each weekday, the probability of observation is multiplied by this value. Set to 1.1 for Monday and Tuesday and 1 otherwise. 
     \item \code{observationProb}: The total probability that an infected individual will be observed. Set to 0.8.
     \item $t_{max}$: Maximal value of $t$ for simulation. Set to 401.
 \end{itemize}
@@ -99,7 +75,6 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
 \subsubsection{Derived variable explanations}
 \begin{itemize}
     \item \code{incidence}: The number of new individuals infected today that weren't infected yesterday. At t=0, incidence is set to 10.
-    \item \code{expectedIncidence}: The expected number of individuals that would be infected today. This makes no adjustments for past dynamical noise, and effectively asks the question "what if dynamical noise ceased to exist today?" A timeseries of \code{expectedIncidence} is considered to be optimally smoothed.
     \item $\mu$: The reciprocal of the E[\code{incubationDist}], analogous to the $E \rightarrow I$ controlling parameter in SEIR model.
 \end{itemize}
 
@@ -109,20 +84,16 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
 
 \begin{enumerate}
 	\item The infectious disease being modeled follows SEIR dynamics.
-	\item Dynamical noise can cause a non-deterministic number of infections per day and can also cause variance in the day that a person shows symptoms, is observed, and recovers.
-	\item Observation noise can result in a non-deterministic number of infections being observed each day.
-	\item Not every person who is infected will be observed.
-	\item An infectee can be detected before or after they show symptoms.
-	\item An infectee is only symptomatic during the period that they show symptoms. However, this is not entirely realistic in the case of COVID-19 \cite{asymptomatic}.
-	\item (Full dynamical noise mode): An infection cannot be observed once the infectee has recovered.
+	\item When an individual is infected, the time that they will be detected at and the time they will become infectious at are defined by two independent distributions.
+	\item Dynamical noise does not exist; that is, the true number of people infected each day is deterministic.  
+	\item However, not every person who is infected will be observed. Observation noise can result in a non-deterministic number of infections being observed each day. 
+	\item An infectee is only symptomatic during the period that they show symptoms (the Infectious period in the SEIR model). However, this is not entirely realistic in the case of COVID-19 \cite{asymptomatic}.
 \end{enumerate}
 
 \subsubsection{Pre-simulation setup}
 
 \begin{enumerate}
-    \item Precompute an observation distribution for every day in the week. For each weekday, modify a copy of baseObservationDist such that each weekday in the distribution is multiplied by the corresponding item in dayScalers. Then, renormalize this distribution to have a sum of 1.
-
-    \item For each weekday observation distribution, compute the probability $p$ that \code{weekdayObservationDist} $\leq$ (\code{infectiousDist}+\code{recoveryDist}). Then, that weekday's \code{adjustedObservationProb} $\gets$ \code{obervationProb}$/p$. 
+    \item Compute an observation distribution for every day in the week. For each weekday, modify a copy of \code{baseObservationDist} such that each weekday in the distribution is multiplied by the corresponding item in dayScalers. Then, renormalize this distribution to have a sum of 1.
     
     \item Set values for each state variable. Set $N \gets sum(S, E, I, R)$. Additionally, set $t \gets -1$ for setup purposes.
 
@@ -131,451 +102,153 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
 \subsubsection{Simulation}
 These steps are executed for each desired value of t between 0 and $t_{max}$.
 \begin{enumerate}
-    \item Compute $\nR_t \gets \beta_t/\mu \cdot S/N$. This refers to instantaneous $\nR_t$.
     
     \item Compute the weekday, $t \pmod 7$.
     
-    \item If t=0, then initialize $incidence$ to some number. Else, if running in full dynamical noise mode, compute \code{incidence} $= negBinom(SI\beta(t)/N, \kappa)$ and \code{expectedIncidence} $= SI\beta(t)/N$. Else, compute \code{expectedIncidence} = \code{incidence} = $SI\beta(t)/N$.
+    \item If t=0, then initialize $incidence$ to some number. Else, if running in full dynamical noise mode, compute \code{incidence} $= negBinom(SI\beta(t)/N, \kappa)$ and \code{expectedIncidence} $= SI\beta(t)/N$.
     
     \item Transition event times are put into a separate list with each element at each index representing the number of events at (index) days from now. 
-        \begin{enumerate}
-            \item dynamical noise mode: For each incident case today, choose an \linebreak \code{incubationTime} $(E \rightarrow I)$, \code{infectiousTime}, and \code{observationTime} $(E \rightarrow O)$ by sampling from \code{incubationDist}, \code{infectiousDist}, and the appropriate \code{weekdayObservationDist} respectively. 
-            
-            \item Otherwise: Transition events are distributed amongst all future days with probability equal to their respective probability density functions. $E \rightarrow I$ events are proportional to \code{incubationDist}, $I \rightarrow R$ is proportional to \code{incubationDist + infectiousDist}, and $E \rightarrow I$ is proportional to the appropriate \code{weekdayObservationDist} scaled by \code{obervationProb}. Note that the previous idea of enforcing \linebreak $observationTime \leq totalRecoveryTime$ is not accomplished here.
 
-        \end{enumerate}
+    \item Transition events are distributed amongst all future days with a value equal to their respective probability density functions. $E \rightarrow I$ events are proportional to \code{incubationDist}, $I \rightarrow R$ is proportional to \code{incubationDist + infectiousDist}, and $E \rightarrow I$ is proportional to the appropriate \linebreak \code{weekdayObservationDist} scaled by \code{obervationProb}.
 
-    \item Handle observation events.
-        \begin{enumerate}
-            \item dynamical noise mode/Generalized dynamical noise: For each incident case, \code{totalRecoveryTime} is \code{incubationTime + infectiousTime} days from now. If \code{observationTime} $\leq$ \code{totalRecoveryTime}, then observe the incident case with probability of that weekday's \linebreak \code{adjustedObservationProb}. 
-            \item Fully deterministic mode: The number of observations added is scaled by \code{observationProb}.
-            \item Simple observation noise: The number of observations added at each point in the future is sampled from $negBinom(n_{obs}, \kappa)$.
 
-        \end{enumerate}
+    \item The number of observations added at each point in the future is sampled from $negBinom(n_{obs}, \kappa)$.
     
     \item Execute all other transition events occurring today. For $S \rightarrow E, S=S-1, E=E+1$. For $E \rightarrow I, E=E-1, I=I+1$. For $I \rightarrow R, I = I-1, R = R+1$. For $E \rightarrow O, O = O+1$
     
-
     
-    \item Store all state variables as well as \code{incidence} and \code{expectedIncidence} from today.
+    \item Store all state variables as well as \code{incidence} from today.
+    
 \end{enumerate}
 
 \subsubsection{Post-simulation}
 \begin{enumerate}
-    \item Compute the generation interval, \code{infectiousDist + recoveryDist}. This is done by convolving the two distributions together. 
-    \item Compute case $\nR(t)$ by backward-convolving instantaneous $\nR(t)$ with the generation interval. This is implemented by using \code{convolve(..., type='filter')} in R.
-    \item Compute \code{scaledIncidence} and \code{scaledExpectedIncidence} by multiplying \code{incidence} and \code{expectedIncidence} (respectively) by \code{observationProb}.
+    \item Compute \code{scaledIncidence} by multiplying \code{incidence} by \code{observationProb}.
+    \item Compute the ground truth r(t) by taking the first differences of $log(\code{incidence})$. (The r(t) for a given day is equal to $log(t+1) - log(t)$). The ground truth is undefined for days on which $\code{incidence}=0$ or $t=t_{max}$. 
 \end{enumerate}
 
+\section{r(t) Estimation}
 
-\subsubsection{Previous simulation paradigm}
-Before January 2020, this simulation model was an ordinary differential equation SEIR model, assuming that $E \rightarrow I$  resulted in a possible observation. The number of observed symptomatic cases each day was sampled from a beta-binomial distribution with a maximum size of the floor of the daily incident cases. However, this model did not support dynamical noise, nor did it support the weekly observation trends common in COVID-19 data. However, this model was effective for testing purposes.
+\subsection{The Savitzky-Golay filter}
+	The Savitzky-Golay filter is a low-pass filter typically used for signal processing applications. The principle behind the Savitzky-Golay filter is that, for each time $t$, a polynomial regression model is fit from the points surrounding it. For this work, three additional parameters are considered: window size, polynomial order, and derivative order. 
+	
+	For each time $t$, a polynomial regression model is fit using the incidence data from the times $[t-\code{windowWidth}, t+\code{windowWidth}]$, where $\code{windowWidth} = floor(\code{windowSize}/2)$. For this work, polynomial order is set to 1 for all filters (making each window a linear regression). Then, the value of the filter at each time $t$ is equal to the \code{derivativeOrder}th derivative of the best-fit polynomial at time $t$. For the left \code{windowWidth} points, the regression model is fit to the first \code{windowSize} points in the timeseries, and the value of the filter at each of the first \code{windowSize} points is equal to the regression model's prediction at each of these points. The analogous method is applied to the right \code{windowSize} points, using the last \code{windowWidth} points to train the regression model. 
 
-\clearpage
-\subsection{Simulation Images}
+	While confidence interval estimation for this filter is not standard in the signal processing field, it can be done for derivative order 0 by taking the confidence interval on each predicted filter value. (Other combinations may also be possible; for example, for derivative order 1 and polynomial order 1 by taking the confidence interval on the slope of the linear regression.)
 
-For the following simulations, $\nR_0(t)$ was defined according to the following function. This is, $\beta(t)$ was varied such that $\frac{\beta(t)}{\mu(t)} = \nR_0(t)$, where $\mu(t)$ represents the mean time to recovery, E[\code{infectiousDist}]. $\nR_0(t)$ is the target basic reproductive number for each day; that is, the basic reproductive number on each day if $\nR(t)$ was not scaled by $\frac{S}{N}$. $\nR_0(t)$ was provided as a parameter during the simulation period. 
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/R0.png}
-    \caption{$\nR_0(t)$}
-    \label{fig:my_label}
-\end{figure}
-
-\subsubsection{Full dynamical noise}
-As previously stated, runs with full dynamical noise implement noise for all model transitions. This results in highly variable true incidence values, as well as meaningful differences between runs.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/process_1_incidence.png}
-    \caption{Incidence for a typical run containing full dynamical noise, with incidence figures typically on the order of thousands. The expected incidence curve, as previously noted, is the expected value of the incidence of infection on each day, equal to $\frac{\beta SI}{N}$. The observed curve is the number of observation events occurring each day. See paragraph following this figure for more details.} 
-   	\label{ProcessIncidence}
-\end{figure}
-
-This differs from the true incidence of infection and is shown due to high levels of noise in the true incidence of infection curve. The observed curve is the number of observation events occurring each day (the parameters were set such that the time lag between observation and becoming symptomatic are approximately equal). The observed incidence curve records fewer infections than the expected incidence curve (as not everyone who is infected is observed), is shifted forward in time from the observed incidence curve (due to a time lag in observation), is periodic and noisy (due to the explicitly periodic nature of the model), and is less sharp (due to changes being blurred by the observation time lag kernel. 
-
-\clearpage
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.4]{figures/process_1_prevalence.png}
-\caption{Prevalence timeseries (E for exposed, I for infectious) for this run. Exposed individuals are currently asymptomatic individuals (which will become symptomatic later on), and infectious individuals are currently symptomatic individuals.}
-\end{figure}
-
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.4]{figures/process_1_Rt.png}
-\caption{$\nR(t)$ for this run. Note that this instantaneous $\nR(t)$ does not differ significantly from the $\nR_0(t)$ curve, as the number of susceptible individuals does not meaningfully change over the course of the epidemic.}
-\end{figure}
-
-However, it is possible for the infection to die out early, due to the first infectors recovering before infecting anyone. For the following run, the number of people initially infected was set to 1.
-
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.4]{figures/process_die1_incidence.png}
-\caption{Incidence for a run where the infection dies out early.}
-\end{figure}
-
-\clearpage
-\subsubsection{Simple observation noise}
-The simple observation noise mode implements the following changes to the full dynamical noise mode:
-\begin{enumerate}
-	\item Noise is not introduced in determining the number of new infections.
-	\item Noise is not introduced in determining the transitions from $E \rightarrow I$, or $I \rightarrow R$. 
-\end{enumerate}
-
-
-Runs using simple observation noise differ slightly, but not to the same extent as runs using full dynamical noise. This mode was implemented for two main reasons. Firstly, there was a need for the accurate comparison of different smoothing and deconvolution methods on $\nR(t)$ estimation. Under the dynamical noise mode, the simulation could randomly exhibit increased or decreased incidence than expected, causing the underlying $\nR(t)$ to not be equal to the $\nR(t)$ that could be estimated using the perfectly smoothed data. Secondly, there was a need for a suitable way to assess the quality of $r(t)$ estimation. $r(t)$ is defined by the logarithmic derivative of the true underlying incidence, so even the $expectedIncidence$ timeseries from the dynamical noise simulation mode resulted in a very noisy underlying $r(t)$. Note that the $expectedIncidence$ timeseries from the following plots are perfectly smooth due to not utilizing dynamical noise here. Runs using generalized observation noise appear similar, but this mode is unsupported and will not be discussed further.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/simple_observation_2_incidence.png}
-    \caption{Incidence for a run using simple observation noise. Note that expected incidence in this case is equivalent to the true incidence. For more detailed explanations, consult the paragraph after Figure \ref{ProcessIncidence}.}
-\end{figure}
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/simple_observation_2_prevalence.png}
-    \caption{Exposed and infectious prevalence for the same run using simple observation noise. Exposed individuals are currently asymptomatic individuals (which will become symptomatic later on), and infectious individuals are currently symptomatic individuals.}
-\end{figure}
-
-\subsubsection{Fully deterministic}
-The fully deterministic mode is equivalent to the simple observation noise mode, but also removes the noise when sampling $E \rightarrow O$ transitions. The underlying prevalence of the fully deterministic mode is equivalent to that of the simple observation noise mode. This mode was created to inspect the true shape of the observed incidence curve unmodified by noise. 
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/Fully deterministic_incidence.png}
-    \caption{Incidence for a fully deterministic run. Note that expected incidence in this case is equivalent to the true incidence. For more detailed explanations, consult the paragraph after Figure \ref{ProcessIncidence}.}
-\end{figure}
-
-
-\section{Smoothing and Filtering}
-
-\subsection{Rationale}
-Real-world data is noisy and periodic, and various smoothing methods were hypothesized to be effective at removing these effects. It was hoped that removing noise and periodic effects would improve the quality of $\nR(t)$ or $r(t)$ estimation.
-
-\subsection{7-Day Smoothing}
-While this is one of the simplest methods of smoothing, there was a strong theoretical rationale for the use of this method. The model explicitly modeled periodicity with a period of 7 days, so it was unsurprising that this method seemed to be the most effective at smoothing model data. This implementation uses a 7-day rolling (arithmetic) mean, and is centered after smoothing.
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/7day_smooth_ deterministic .png}
-    \caption{7-day smoothing of deterministic simulation incidence. The \emph{observed} curve is the number of observation events recorded per day (For a more detailed explanation, consult the paragraph after Figure \ref{ProcessIncidence}). The \emph {smoothed observed} curve is the 7-day smoothed \emph{observed} curve, and the \emph{convolved expected} curve is the \emph{true incidence of infection} curve (not shown), multiplied by \code{detectionProb}, convolved forward by the mean detection kernel \code{baseObservationDist}. We consider this \emph{convolved expected} curve to be the ground truth.} 
-    \label{DeterministicSmoothing}
-\end{figure}
-
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/7day_smooth_ process_1 .png}
-    \caption{7-day smoothing of full dynamical noise simulation incidence. The \emph{convolved expected} curve is the ground truth, while the \emph{observed} curve is the number of observations recorded per day. Consult the caption of Figure \ref{DeterministicSmoothing} for more details on each of these curves.}
-\end{figure}
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/7day_smooth_ simple_observation_1 .png}
-    \caption{7-day smoothing of simple observation noise simulation incidence. The \emph{convolved expected} curve is the ground truth, while the \emph{observed} curve is the number of observations recorded per day. Consult the caption of Figure \ref{DeterministicSmoothing} for more details on each of these curves.}
-\end{figure}
-
-\subsection{Wavelet transform low-pass filter}
-The discrete wavelet transform converts a timeseries into the wavelet domain, for which there are high-frequency and low-frequency wavelets. Wavelets are periodic functions localized in space, allowing for modelling of periodicity and spatial features that can change over time. All wavelets above a certain level (high-frequency wavelets) were set to zero in order to perform filtering, although this seems like a crude approach. This works relatively well for certain wavelet parameters, such as using the db4 wavelet and removing all levels above 3. This has the benefit of being highly flexible, allowing for various levels of smoothing and different choices of wavelets. However, this method is not as effective as the 7-day smoothing on the original data. Note: This is a type of filtering, which differs from smoothing as it does not have a time lag and is therefore more suitable for real-time applications (which may be desirable in the case of pandemic management).
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wavelet_smooth deterministic .png}
-    \caption{Wavelet filtering of deterministic simulation incidence. The \emph{convolved expected} curve is the ground truth, while the \emph{observed} curve is the number of observations recorded per day. Consult the caption of Figure \ref{DeterministicSmoothing} for more details on each of these curves.}
-\end{figure}
-
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wavelet_smooth process_1 .png}
-    \caption{Wavelet filtering of full dynamical noise simulation incidence. The \emph{convolved expected} curve is the ground truth, while the \emph{observed} curve is the number of observations recorded per day. Consult the caption of Figure \ref{DeterministicSmoothing} for more details on each of these curves.}
-\end{figure}
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wavelet_smooth simple_observation_1 .png}
-    \caption{Wavelet filtering of simple observation noise simulation incidence. The \emph{convolved expected} curve is the ground truth, while the \emph{observed} curve is the number of observations Consult the caption of Figure \ref{DeterministicSmoothing} for more details on each of these curves.}
-\end{figure}
-
-
-
-\subsection{Butterworth low-pass filter}
-Similarly to the wavelet transform, the Fourier transform converts a timeseries to the frequency domain. One can set all frequencies above a threshold to zero to perform filtering. However, this suffers the unique issue of not being very accurate at the end of the timeseries, and has therefore been largely ignored for the rest of the project. The following filter is a Butterworth filter of order 5 and critical frequency of 0.1.
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/fft_smooth_ simple_observation_1 .png}
-    \caption{Butterworth filter of simple observation noise simulation incidence. The \emph{convolved expected} curve is the ground truth, while the \emph{observed} curve is the number of observations recorded per day. Consult the caption of Figure \ref{DeterministicSmoothing} for more details on each of these curves.}
-\end{figure}
-
-\section {$\nR(t)$ and $r(t)$ Estimation}
-\subsection{Cori $\nR(t)$ Estimation}
-This method is a standard for estimating instantaneous $\nR(t)$ \cite{Cori}. This method works extremely well for non-noisy/periodic data, and is also robust to noisy/periodic data due to having an intrinsic 7-day smoothing window. This work linearly extrapolates several timesteps beyond the original timeseries at the end of the timeseries, in order to improve the estimation stability at the end of the timeseries.
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/estim_simple_observation_1.png}
-    \caption{Cori estimation on data with simple observation noise. The true $\nR(t)$ is the expected $\nR(t)$ according to the model, and serves as the ground truth in the simple observation noise case. The Cori method was used to estimate $\nR(t)$ with three different timeseries. The expected (true) incidence of infection was used, as well as the observed incidence (see paragraph after \ref{ProcessIncidence} for details) either shifted backwards by the mean time from infection to observation, E[\code{baseObservationDist}] or deconvolved using this distribution after 7-day smoothing. There appears to be minimal differences between all methods, and each tracks the ground truth well.}
-\end{figure}
-
-
-\subsection{Wallinga-Teunis $\nR(t)$ Estimation}
-This method is a standard for estimating case $\nR(t)$ \cite{WallingaTeunis}. This method also works very well for what it is intended to do, the estimation of case $\nR(t)$. This work linearly extrapolates several timesteps beyond  the original timeseries at the end of the timeseries, in order to improve the estimation stability at the end of the timeseries.
-
-However, this method reacts to changes in $\nR(t)$ slower than the Cori method, and the original "Shifts" idea does not appear to be better than simply taking a Cori estimate and shifting it instead. This was implemented by using the EpiEstim WT estimation method on the observation data. This WT estimation was shifted forward by the mean time from infection to observation. As case $\nR(t)$  is backward-convolved from instantaneous $\nR(t)$ by the generation interval distribution, it may be possible to deconvolve the WT estimates in order to obtain "faster" estimates of case $\nR(t)$. However, this idea has not been thoroughly explored.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wt_comparison_deterministic.png}
-    \caption{Comparison of WT Shifts and shifted Cori methods using the observed incidence (the number of observations recorded per day) from the deterministic simulation. The true instantaneous $\nR(t)$ was an assumption of the model. Note that the Cori method performs well, and the WT "Shifts" idea does not confer a benefit in this context.}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wt_comparison_process_1.png}
-    \caption{Comparison of WT Shifts and shifted Cori methods using the observed incidence (the number of observations recorded per day) from the dynamical noise simulation. The true instantaneous $\nR(t)$ was an assumption of the model. While the two methods largely agree, the WT Shifts method takes longer to reach the same conclusions as the Cori method without giving more stable results - even in the presence of noise.}
-\end{figure}
-
-\clearpage
-However, WT estimation performs well on its intended task.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wt_vs_true_deterministic.png}
-    \caption{Comparison of WT and true case $\nR(t)$ using the observed incidence (the number of observations recorded per day) from the deterministic simulation. The true instantaneous $\nR(t)$ was an assumption of the model. Observe that the WT method tracks the true case $R(t)$ well.}
-    \label{fig:my_label}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/wt_vs_true_process_1.png}
-    \caption{Comparison of WT and true case $\nR(t)$ using the observed incidence (the number of observations recorded per day) from the dynamical noise simulation. The true instantaneous $\nR(t)$ was an assumption of the model. Observe that the WT method tracks the true case $R(t)$ well.}
-    \label{fig:my_label}
-\end{figure}
-
-
-
-\subsection{Naive $r(t)$ Estimation}
-$r(t)$ can be defined as the logarithmic derivative of incidence \cite{Gostic}. As a discrete approximation to this, the first differences of the logarithm of incidence was used to calculate $r(t)$. For $r(t)$ estimation, observed incidence data was first smoothed with a 7-day window, then the previous discrete approximation of the logarithmic derivative of incidence was calculated. 7-day smoothing was then applied once more to the naive $r(t)$ estimates, in order to get a more stable estimate. The estimates were then shifted backwards by the mean time from infection to observation. One issue with this double-smoothing method is that it does not return results for the 7 days at the beginning and 7 days at the end of the timeseries.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/rt_simple_observation_1.png}
-    \caption{$r(t)$ estimation on simulated data with simple observation noise, using the observed incidence (the number of observations recorded per day). Notice that while estimation is extremely noisy at the beginning of the timeseries, it levels off later on and provides estimates close to the true values.}
-\end{figure}
-
-
-\section{Shifts vs. Deconvolution}
-
-\subsection{Shifts}
-Despite warnings by Gostic et al \cite{Gostic}. about the use of shifts instead of deconvolution in epidemic data, shifting timeseries appears to be superior when there exists noise in the data. Nonetheless, this section will continue to report on the timeseries deconvolution methods I had been working on.
-
-
-\subsection{Richardson-Lucy Deconvolution}
-Total variation-regularized Richardson-Lucy deconvolution is an iterative method following the equation below: \cite{RLLoss}
-\begin{equation}
-    o_{k+1} = \frac{i}{o_k * h} * (-h) \frac{o_k}{1-\alpha div(\frac{\nabla o_k}{|\nabla o_k|})}
-\end{equation}
-
-where $o$ represents the deconvolved image, $i$ represents the observed image, $h$ represents the point-spread function, $div$ is divergence, $\alpha$ is a regularization parameter, $int_z$ refers to integrating over all pixels of the image, and $*$ is the convolution operator.
-
-While this equation looks complex, it can be derived from a simpler principle: the minimization of the following loss function. 
-\begin{equation}
-    J(o) = \underbrace{\int_z ((h*o)(x) - i(x) log(h*o)(x))dx}_{\mbox{Poisson log-likelihood}} + \underbrace{\alpha \int_z |\nabla o(x)| dx}_{\mbox{Total Variation regularization}}
-\end{equation}
-
-
-In the epidemiological context, $o$ represents the estimated incidence of infection, $i$ represents the observed incidence, $h$ represents the incubation period distribution, $div$ reduces to the 1-dimensional derivative,  $\int_z$ refers to integrating over all times in the timeseries, and $\nabla$ also reduces to the 1-dimensional derivative.
-
-With regularization, the Richardson-Lucy algorithm will converge to some reasonable value. However, in some cases, early stopping is still desirable. The Cobey Lab used a chi-squared statistic comparing the convolution of the deconvolved image to the observed image to perform early stopping. The total variation regularization was a modification of the Cobey Lab's R code.
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/deconv_deterministic.png}
-    \caption{Regularized Richardson-Lucy deconvolution used on observation (number of observation events per day) data from the deterministic simulation, smoothed before deconvolution. This is more effective at reconstructing the sharp peak compared to simply shifting the data. The expected incidence of infection is the true incidence of infection each day, and is the target ground truth for this deconvolution.}
-    \label{fig:my_label}
-\end{figure}
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/deconv_process_1.png}
-    \caption{Regularized Richardson-Lucy deconvolution used on a simulation with dynamical noise, smoothed before deconvolution. The expected incidence of infection is the true incidence of infection each day, and is the target ground truth for this deconvolution. Notice that this reconstruction appears relatively poor due to noise artifacts being amplified.}
-    \label{fig:my_label}
-\end{figure}
-
-\subsection{Optimizer-Based Deconvolutions}
-Rather than using the Richardson-Lucy algorithm for deconvolution, one can also optimize the same underlying loss function using conventional optimizers. While this problem is too difficult for most of the SciPy optimizers, it is possible to use the Powell (or potentially other non-gradient optimizers) for this task. One upside of this idea is that it is relatively easy to implement deconvolutions based on new statistical models; for example, the negative binomial loglikelihood was used in place of the Poisson log-likelihood in one of my implementations. However, this method was not pursued further as it did not appear to outperform the regularized Richardson-Lucy implimentation.
-
-\subsection{Wiener Deconvolution}
-Wiener deconvolution performs deconvolution in the Fourier domain (deconvolutions are simple divisions in this domain), but adds an additional factor to the denominator. This suffers from similar problems compared to the previously discussed Fourier transform low-pass filters, and was not pursued further.
-
-\section{Use of methods on real-world country data}
-\subsection{Explanation}
-The most promising methods (7-day smoothing, shifted Cori, and naive $\nr(t)$ estimation) were applied to some real-world data below (data from Our World In Data \cite{OWID}).  Richardson-Lucy deconvolution (applied to 7-day smoothed data) was also applied to see its effectiveness on real-world data.
+\subsection{Estimation algorithm}
 
 \begin{enumerate}
-    \item Smoothing does not meaningfully matter for Cori $\nR(t)$ estimation, but is necessary for naive $\nr(t)$ estimation.
-    \item 7-day smoothing works well. 
-    \item Richardson-Lucy deconvolution can be applied to real-world COVID-19 data. However, we still need to estimate an appropriate observation time lag distribution (which has not been done in this project for real-world data).
+	\item The observed incidence timeseries is filtered using a Savitzky-Golay filter of window size 7, polynomial order 1, and derivative order 0, saving both the mean value of the filter and the confidence interval at each point. This is intended as an initial low-pass filter on the incidence data, which acts to reduce periodicity and noise. 
+	
+	\item Define a function \code{estim(incidence, windowSize, shiftAmt)}.
+		\begin{enumerate}
+			\item $\code{logIncidence} \gets log(\code{incidence})$.
+			\item Filter \code{logIncidence} using a Savitzky-Golay filter of length \code{windowSize}, polynomial order 1, and derivative order 1. NaNs are ignored (not used as points in the linear regression). Only the mean estimate at each point needs to be considered.
+			\item Shift the resulting curve backwards by $\code{shiftAmt}$, which should be set to the rounded expected value of the time between infection and observation. 
+			\item Return the shifted curve, which is the mean r(t) estimate given the input incidence timeseries.
+		\end{enumerate}
+	
+	\item Sample a new plausible incidence timeseries. That is, for \code{nBootstrap} iterations, for each point in the filtered timeseries obtained from step 1, randomly sample a value from the confidence interval of the point and append it to a new timeseries. Store all new plausible incidence timeseries.
+	
+	\item Call \code{estim} on each plausible incidence timeseries to obtain an r(t) estimation. 
+	
+	\item Call \code{estim} on the mean value of the filtered timeseries obtained from step 1. This is the mean r(t) estimate.
+	
+	\item For each time $t$, compute the lower 0.05 and upper 0.95 quantiles of the r(t) estimated from the plausible incidence timeseries. This is the lower and upper confidence interval bounds on the r(t) estimates. (For example, if the plausible incidence timeseries was stored in a $\code{length(incidence)} \times \code{nBootstrap}$ matrix where $\code{length(incidence)}$ is the number of rows, then compute quantiles row-wise to obtain a $\code{length(incidence)} \times 1$ matrix.) 
 \end{enumerate}
 
+\code{windowSize} can be chosen as any odd number, but 7 and 15 have been tested. Lower numbers should react to changes more quickly but should also result in noisier estimates, and vice versa.
 
-\subsection{Figures - Germany}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/smoothing_Germany.png}
-    \caption{Use of 7-day smoothing on German real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
-\end{figure}
+\subsection{Caveats and potential improvements}
+\begin{itemize}
+	\item Confidence intervals assume a normally distributed confidence interval; this may be changed to a t-distributed confidence interval later on). 
+	\item Using deconvolution rather than shifting is more theoretically sound, but deconvolution may amplify noise inherent in the data \cite{Gostic} \cite{RLLoss}.  The effect of using deconvolution rather than shifting may be investigated later on. 
+\end{itemize}
 
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.4]{figures/deconv_Germany.png}
-    \caption{Deconvolution on German real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
-\end{figure}
+\section{Results}
+
+\subsection{Modelling}
+
+Varying $\nR_0(t)$ was used to define model behavior. These parameters were chosen to simulate a rise, peak, and decline in COVID-19 incidence.
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/estim_Germany.png}
-    \caption{Use of shifted Cori $\nR(t)$ estimation methods on German real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
+\centering
+\includegraphics[scale=0.4]{figures/R0.png}
+\caption{A piecewise linear function was used to define gradual changes in $\nR_0(t)$, which drives the incidence in this model.}
+
 \end{figure}
 
 \clearpage
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/rt_Germany.png}
-    \caption{$\nr(t)$ estimation method used on German real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
-\end{figure}
-
-\clearpage
-\subsection{Figures - Italy}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/smoothing_Italy.png}
-    \caption{Use of 7-day smoothing on Italian real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.4]{figures/deconv_Italy.png}
-    \caption{Deconvolution on Italian real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
+\centering
+\includegraphics[scale=0.4]{figures/simple_observation_1_incidence.png}
+\caption{A plot of modeled incidence over time. The incidence of infection is perfectly deterministic, and increases exactly when an individual is infected. The observed incidence is periodic, has observation noise, is delayed by the time delay distribution between infection and observation, and reflects the 80\% of observed infections.}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/estim_Italy.png}
-    \caption{Use of shifted Cori $\nR(t)$ estimation methods on Italian real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
+\centering
+\includegraphics[scale=0.4]{figures/simple_observation_1_prevalence.png}
+\caption{A plot of modeled prevalence over time. As all transitions aside from observations are deterministic, the number of infectious and exposed (non-infectious/in incubation period) individuals are also deterministic.}
 \end{figure}
 
-\clearpage
+\subsection{Smoothing and Estimation}
+
+The first step in the estimation algorithm is an initial filtered of the incidence data to reduce noise and periodicity. See the r(t) estimation section for more details.
+
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/rt_Italy.png}
-    \caption{Naive $\nr(t)$ estimation method used on Italian real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
-\end{figure}
-
-\clearpage
-\subsection{Figures - South Korea}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/smoothing_South Korea.png}
-    \caption{Use of 7-day smoothing on South Korean real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.4]{figures/deconv_South Korea.png}
-    \caption{Deconvolution on South Korean real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
+\centering
+\includegraphics[scale=0.4]{figures/savgol_simple_observation_1.png}
+\caption{Application of a first-pass Savitzky-Golay filter substantially reduces noise and periodicity. The "expected observed" data is shown as a comparison, and is the incidence of infection forward-convolved by the mean infection-observation delay distribution.}
+\label{SGnoCI}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/estim_South Korea.png}
-    \caption{Use of shifted Cori $\nR(t)$ estimation methods on South Korean real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
+\centering
+\includegraphics[scale=0.4]{figures/savgol_simple_observation_1_CI.png}
+\caption{The same first-pass Savitzky-Golay filter as shown in Figure \ref{SGnoCI}, with the confidence intervals shown.} 
+
+% figure refs won't update unless you run twice.
+\end{figure}
+
+The next step in the estimation algorithm produces r(t) estimates from the filtered data. Window sizes can be chosen arbitrarily, and have been set to 7 and 15 days in the following figures.
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{figures/rt_7_simple_observation_1.png}
+\caption{r(t) estimation using simulated data, with a 7-day post-filtering Savitzky-Golay window size. All values are clipped between -0.1 and 0.1 for visualization purposes. The true r(t) is within the 95\% confidence interval 99\% of the time.}
+\label{SGnoCI}
 \end{figure}
 
 \clearpage
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/rt_South Korea.png}
-    \caption{$\nr(t)$ estimation method used on South Korean real-world incidence data. Incidence data comes from confirmed cases.}
-    \label{fig:my_label}
+\centering
+\includegraphics[scale=0.4]{figures/rt_15_simple_observation_1.png}
+\caption{r(t) estimation using simulated data, with a 15-day post-filtering Savitzky-Golay window size. All values are clipped between -0.1 and 0.1 for visualization purposes. The true r(t) is within the 95\% confidence interval 94\% of the time.}
 \end{figure}
 
-\section{Use of methods on real-world variant data}
-The previously described $\nr(t)$ estimation methods were used on Ontario COVID-19 data curated by Michael Li \cite{mli}. 
+\subsection{Real-world data}
+While ground-truth r(t) values are unavailable for real-world data, this method can still be evaluated for qualitative stability using real-world data. 
 
 \clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/N501Y.png}
-    \caption{Estimated N501Y variant incidence (N501Y test positivity rate multiplied by total incidence)}
-\end{figure}
-
-\clearpage
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/N501Y_r(t)7.png}
-    \caption{Estimated N501Y variant r(t) with a smoothing window of 7 days. Note that this seems too spiky without smoothing, but is not fully up to date with a smoothing window of 7 days. To deal with this issue, the smoothing window could be reduced, or we could use extrapolation methods, or we could attempt using a different smoothing method.}
-
-\end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/N501Y_r(t)_zoomed7.png}
-    \caption{Estimated N501Y variant r(t) with a smoothing window of 7 days, zoomed in on the most relevant time period.}
+\centering
+\includegraphics[scale=0.4]{figures/N501Y.png}
+\caption{r(t) estimation using estimated N501Y variant data from Ontario, courtesy of Michael Li \cite{mli}. A 7-day post-filtering method and mean observation delay of 6 days was used.}
+
 \end{figure}
 
 \clearpage
 \begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/N501Y_r(t)5.png}
-    \caption{Estimated N501Y variant r(t) with a smoothing window of 5 days.}
-
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.4]{figures/N501Y_r(t)_zoomed5.png}
-    \caption{Estimated N501Y variant r(t) with a smoothing window of 5 days, zoomed in on the most relevant time period.}
+\centering
+\includegraphics[scale=0.4]{figures/Canada_rt.png}
+\caption{r(t) estimation using Canadian incidence data from OWID \cite{OWID}. A 15-day post-filtering method and mean observation delay of 6 days was used. r(t) estimates are clipped between -0.1 and 0.1 for visualization purposes. (Note that during the period where estimates are cut off, the confidence interval is cut off as well.)}
 \end{figure}
 
 
 \begin{thebibliography}{2}
-
-\bibitem{WallingaTeunis}
-Wallinga, J. (2004). Different Epidemic Curves for Severe Acute Respiratory Syndrome Reveal Similar Impacts of Control Measures. American Journal Of Epidemiology, 160(6), 509-516. https://doi.org/10.1093/aje/kwh255
-
-\bibitem{Cori}
-Cori, A., Ferguson, N., Fraser, C., \& Cauchemez, S. (2013). A New Framework and Software to Estimate Time-Varying Reproduction Numbers During Epidemics. American Journal Of Epidemiology, 178(9), 1505-1512. https://doi.org/10.1093/aje/kwt133
-
-\bibitem{Gostic}
-Gostic, K., McGough, L., Baskerville, E., Abbott, S., Joshi, K., \& Tedijanto, C. et al. (2020). Practical considerations for measuring the effective reproductive number, Rt. PLOS Computational Biology, 16(12), e1008409. https://doi.org/10.1371/journal.pcbi.1008409
-
 
 \bibitem{OWID}
 Roser, M., Ritchie, H., Ortiz-Ospina, E., \& Hasell, J. (2020). Coronavirus Pandemic (COVID-19). OurWorldInData.org. Retrieved 24 February 2021, from https://ourworldindata.org/coronavirus.
@@ -588,6 +261,9 @@ R: The Negative Binomial Distribution. Stat.ethz.ch. (2021). Retrieved 24 Februa
 
 \bibitem{asymptomatic}
 Pollock, A., \& Lancaster, J. (2020). Asymptomatic transmission of covid-19. BMJ, m4851. https://doi.org/10.1136/bmj.m4851
+
+\bibitem{Gostic}
+Gostic, K., McGough, L., Baskerville, E., Abbott, S., Joshi, K., \& Tedijanto, C. et al. (2020). Practical considerations for measuring the effective reproductive number, Rt. PLOS Computational Biology, 16(12), e1008409. https://doi.org/10.1371/journal.pcbi.1008409
 
 \bibitem{RLLoss}
 Dey, N., Blanc-Féraud, L., Zimmer, C., Roux, P., Kam, Z., Olivo-Marin, J., \& Zerubia, J. (2004). 3D Microscopy Deconvolution using Richardson-Lucy Algorithm with Total Variation Regularization. INRIA. Retrieved from https://hal.inria.fr/inria-00070726/document

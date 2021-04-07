@@ -3,18 +3,11 @@ library('reticulate')
 library('ggplot2')
 library('EpiEstim')
 library('ggthemes')
-library(data.table)
+library('data.table')
 library('extraDistr')
 library('poweRlaw')
 library('zoo')
-
-
-source('ts_utils/rl_cobey.R')
-source('ts_utils/Rt.R')
 source('ts_utils/process_utils.R')
-
-
-
 
 
 ##################################################################################
@@ -22,19 +15,18 @@ source('ts_utils/process_utils.R')
 t = c(0:401)
 
 R0 = function(t){
-  if (t< 150){
-    z=2.1
+  breakpoint_t = c(0, 100, 150, 300, 400, 99999999) 
+  breakpoint_R = c(2.1, 1.75, 1.5, 0.75, 1.2, 1.2)
+  
+  for (i_break in c(1:length(breakpoint_t))){
+    if(t >= breakpoint_t[i_break] && t < breakpoint_t[i_break+1]){
+      m = (breakpoint_R[i_break+1] - breakpoint_R[i_break])/(breakpoint_t[i_break+1] - breakpoint_t[i_break])
+      current_R = m * (t - breakpoint_t[i_break]) + breakpoint_R[i_break]
+      return(current_R)
+    }
   }
-  else if (t < 200){
-    z=0.99
-  }
-  else if (t < 300){
-    z=0.9
-  }
-  else{
-    z=1.2
-  }
-  return(z)
+  stopifnot(FALSE)
+
 }
 
 
@@ -47,7 +39,7 @@ b = function(t, MU){
 ##################################################################################
 # Periodic detection parameters
 detection_prob = 0.8
-detection_consts = c(1, 1.2, 1.2, 1, 1, 1, 1)
+detection_consts = c(1, 1.05, 1.05, 1, 1, 1, 1)
 
 # Incubation/Infection/Detection distribution parameters
 # https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2774707

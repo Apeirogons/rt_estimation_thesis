@@ -1,17 +1,10 @@
 #! /usr/bin/Rscript
-library('deSolve')
+
 library('extraDistr')
 library('EpiEstim')
 library('poweRlaw')
 library('data.table')
-library('ggthemes')
-library('zoo')
 
-source('ts_utils/rl_cobey.R')
-
-n_day_smoother = function(data, N=7){
-  return(rollmean(data, N, fill=NA, align='center'))
-}
 
 r_alt_nbinom = function(N, mean, k){
   if(k == 0){
@@ -64,33 +57,6 @@ get_detection_pdfs = function(detection_prob, detection_consts, infectious_pdf, 
 pad = function(target, comparator){
   stopifnot(length(target) <= length(comparator))
   return (c(target, rep(NA, length(comparator) - length(target))))
-}
-
-
-extrapolate = function(seir, target, n_targets=50, n_extend=20){
-  data_of_interest = seir[[target]]
-  data_end = tail(seir, n_targets)
-  fm <- as.formula(paste(target, " ~ poly(X, 1)"))
-  
-  extrapolation_model = lm(fm, data=data_end)
-  
-  last_t = data_end$X[length(data_end$X)]
-  extrapolated = data.frame(X=c(last_t:(last_t+(n_extend-1))))
-  extrapolated$interest = predict(extrapolation_model, extrapolated)
-  
-  data_of_interest = append(data_of_interest, extrapolated$interest)
-  Xs = append(seir$X, extrapolated$X)
-  
-  data_of_interest[data_of_interest < 0] = 0
-  data_of_interest[is.na(data_of_interest)] = 0
-  return(list(Xs=Xs, data=c(data_of_interest)))}
-
-deconvolve = function(X, target, detection_pdf, N=7){
-  smoothed_target= n_day_smoother(target, N)
-  
-  rl = get_RL(smoothed_target[!is.na(smoothed_target)], X[!is.na(smoothed_target)], detection_pdf, stopping_n = 0.5, regularize=0.01, max_iter=100)
-  rl = pad(rl$RL_result[rl$time>0], X)
-  return(rl)
 }
 
 shift = data.table::shift

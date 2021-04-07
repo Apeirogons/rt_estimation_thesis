@@ -6,29 +6,29 @@ library(cowplot)
 library(colorspace)
 library(tidyverse)
 
-source('ts_utils/rl_cobey.R')
-source('ts_utils/Rt.R')
-source('ts_utils/process_utils.R')
+
+source('ts_utils/rt.R')
 source('ts_utils/filter.R')
 source('base_params.R')
 source('ggplot_params.R')
 library('reticulate')
 
-use_condaenv('MachineLearning')
-source_python('ts_utils/deconvolution.py')
 
-i=7
+i=15
 n_shift = 6
 
 
-data <- read.csv('data/mli_on_variants.csv') %>%
-  select(c('date', 'type', 'count')) %>%
-  mutate(date=as.Date(date)) %>%
-  filter(type=='N501Y_est') %>%
-  filter(!is.na(count)) #%>%
+np_clip <- function(x, a, b) {
+  ifelse(x <= a,  a, ifelse(x >= b, b, x))
+}
 
 
-filtered = linear_filter(data$count, level=0.95)
+data <- read.csv('data/Canada.csv') %>%
+  select(c('date', 'new_cases_per_million')) %>%
+  mutate(date=as.Date(date), count = new_cases_per_million*37590000/1000000)
+
+
+
 
 data <- data %>%
  # mutate(smoothed = sg_filter(count, window_length=7, polyorder=1)) %>%
@@ -40,8 +40,9 @@ data <- data %>%
 rt_estim_2smoothed = rt_estimation_ci(data$smoothed, data$lwr, data$upr,n=i,level=0.95)
 
 
+
 data <- data %>%
-  mutate(mean_estim = rt_estim_2smoothed$mean, lower_estim = rt_estim_2smoothed$lower, upper_estim = rt_estim_2smoothed$upper) 
+  mutate(mean_estim = np_clip(rt_estim_2smoothed$mean, -0.1, 0.1), lower_estim = np_clip(rt_estim_2smoothed$lower, -0.1, 0.1), upper_estim = np_clip(rt_estim_2smoothed$upper,  -0.1, 0.1))
 
 for(z in c(1:10)){
   first_row = data[1, ]
@@ -77,21 +78,22 @@ ggplot(rt_group) +
   geom_line(data=orig_group, aes(x=date,y=original_data, color='Observed incidence'), lwd=1) +
 #  geom_line(data=orig_group, aes(x=date, y=smoothed, color='Smoothed observed incidence'), lwd=1) +
 #  geom_ribbon(data=orig_group, aes(x=date, ymin=lwr, ymax=upr, alpha=0.3))+
+  
   scale_color_colorblind()+
   
-  xlim(c(as.Date('2021-02-06'), as.Date('2021-03-08')))+
+ # xlim(c(as.Date('2021-02-06'), as.Date('2021-03-08')))+
   
   facet_wrap(~group,scales = "free_y", ncol=1,
              strip.position = "left", labeller=as_labeller(c(rt = "Estimated r(t) (1/day)", orig = "Observed incidence"))) +
-  labs(x='date', y=NULL, title='Ontario N501Y data/estimations', col='') +
+  labs(x='date', y=NULL, title='Canada data/estimations', col='') +
   theme( legend.position='none')+
   theme(strip.background = element_blank(),
         strip.placement = "outside") + 
-  theme(axis.text.x=element_text(angle=60, hjust=1))
+  theme(axis.text.x=element_text(angle=60, hjust=1)) 
 
 
   
-ggsave('figures/N501Y.png', width=width, height=height)
+ggsave('figures/Canada_rt.png', width=width, height=height)
 
 ########################################################################
 

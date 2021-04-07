@@ -1,6 +1,7 @@
 figures/*
-data/*
 seir/*
+logs/*
+data/*
 .Rhistory
 *.pyc
 *.aux
@@ -9,4 +10,3 @@ seir/*
 *.out
 *.pdf
 *.gz
-logs/*
