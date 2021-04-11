@@ -56,9 +56,10 @@ rt_estimation_ci = function(incidence, ci_lower, ci_higher, n_resample = 50, lev
   
   center = data.table::shift(center[,'mean'], shift_amt)
  # sampled_mean = apply(means, 1, function(x){quantile(x, 0.5, na.rm=TRUE)})
-
-  lowers = apply(means, 1, function(x){quantile(x, 1-level, na.rm=TRUE)})
-  uppers = apply(means, 1, function(x){quantile(x, level, na.rm=TRUE)})
+  
+  L = 1-(1-level)/2
+  lowers = apply(means, 1, function(x){quantile(x, 1-L, na.rm=TRUE)})
+  uppers = apply(means, 1, function(x){quantile(x, L, na.rm=TRUE)})
   
   df = data.frame(mean=center, lower=lowers, upper = uppers) #center
    

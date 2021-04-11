@@ -34,3 +34,11 @@ plotter(seir, i, 'Savitzky-Golay filtering')
 
 i = 'simple_observation_1_CI'
 plotter(seir, i, 'Savitzky-Golay filtering with confidence intervals', show_ribbon=TRUE)
+
+
+i = 'simple_observation_blocks'
+seir = read.csv(paste('seir/', i, '.csv', sep=''))
+plotter(seir, i, 'Savitzky-Golay filtering')
+
+i = 'simple_observation_blocks_CI'
+plotter(seir, i, 'Savitzky-Golay filtering with confidence intervals', show_ribbon=TRUE)

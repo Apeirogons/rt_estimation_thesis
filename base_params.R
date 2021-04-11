@@ -13,26 +13,6 @@ source('ts_utils/process_utils.R')
 # Simulation parameters
 t = c(0:401)
 
-R0 = function(t){
-  breakpoint_t = c(0, 100, 150, 300, 400, 99999999) 
-  breakpoint_R = c(2.1, 1.75, 1.5, 0.75, 1.2, 1.2)
-  
-  for (i_break in c(1:length(breakpoint_t))){
-    if(t >= breakpoint_t[i_break] && t < breakpoint_t[i_break+1]){
-      m = (breakpoint_R[i_break+1] - breakpoint_R[i_break])/(breakpoint_t[i_break+1] - breakpoint_t[i_break])
-      current_R = m * (t - breakpoint_t[i_break]) + breakpoint_R[i_break]
-      return(current_R)
-    }
-  }
-  stopifnot(FALSE)
-
-}
-
-
-b = function(t, MU){
-  z = R0(t)
-  return(z*MU)
-}
 
 
 ##################################################################################
@@ -90,6 +70,7 @@ generation_int[generation_int<0] = 0
 #df = data.frame(t=indices, incubation=incubation_pdf, infectious = infectious_pdf)
 #write.csv(df, 'incubation_and_infectious.csv')
 mean_generation = sum(c(0:(length(generation_int)-1))*generation_int)
+mean_infectious = sum(c(0:(length(infectious_pdf)-1))*infectious_pdf)
 mean_detection = sum(c(0:(length(detection_pdf)-1))*detection_pdf)
 
 

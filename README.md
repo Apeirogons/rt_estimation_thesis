@@ -12,6 +12,8 @@ Code related to my HTHSCI 4R12 thesis project, related to r(t) estimation using 
 - zoo
 - poweRlaw
 - extraDistr
+- reticulate
+- signal
 
 Python package requirements are found in requirements.txt.
 

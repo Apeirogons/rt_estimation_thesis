@@ -22,6 +22,9 @@ logs/seir.out seir : run_simulation.R ts_utils/deterministic_simulation.R base_p
 logs/smoothing_figures.out: smoothing_figures.R ts_utils/filter.R logs/seir.out
 	$r $< > $@
 
+logs/smoothing_figures_extra.out: smoothing_figures_extra.R logs/seir.out
+	$r $< > $@
+
 logs/rt_estim.out: rt_estim.R ts_utils/rt.R logs/seir.out 
 	$r $< > $@
 
@@ -37,6 +40,15 @@ logs/real_world_viz.out: real_world_viz.R logs/data_splitter.out
 logs/real_world_plots.out: real_world_plots.R logs/data_splitter.out 
 	$r $< > $@
 
-main.pdf: main.tex logs/smoothing_figures.out logs/seir.out logs/rt_estim.out logs/variants_plots.out logs/real_world_viz.out logs/real_world_plots.out
+logs/rt_estim_deconv.out: rt_estim_deconv.R ts_utils/rt.R logs/seir.out
+	$r $< > $@
+
+logs/cori_estim.out: cori_estim.R ts_utils/cori_wallinga.R logs/seir.out
+	$r $< > $@
+
+logs/wt_estim.out: wt_estim.R ts_utils/cori_wallinga.R logs/seir.out
+	$r $< > $@
+
+main.pdf: main.tex logs/smoothing_figures.out logs/seir.out logs/rt_estim.out logs/variants_plots.out logs/real_world_viz.out logs/real_world_plots.out logs/rt_estim_deconv.out logs/smoothing_figures_extra.out logs/cori_estim.out logs/wt_estim.out
 	del /f main.pdf
 	pdflatex $< 

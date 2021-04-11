@@ -14,8 +14,8 @@ height= 7.15
 transparent_palette <- function(transparency){
   new_palette=c()
   # transparency: vector of numeric between 0-1
-  palette  <- c( "#000000", "#E69F00", "#56B4E9", "#F0E442", "#009E73", 
-                 "#0072B2", "#D55E00", "#CC79A7")
+  palette  <- c( "#000000", "#E69F00", "#56B4E9", "#D55E00","#0072B2",  "#F0E442", "#009E73", 
+                   "#CC79A7")
   for(i in c(1:length(palette))){
     if (i <= length(transparency)){
       alpha = transparency[i]
