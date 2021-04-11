@@ -1,7 +1,7 @@
 
 ## r(t) estimation
 
-Code related to my HTHSCI 4R12 thesis project, related to r(t) estimation using epidemic timeseries using filtering methods. The majority of the project is written in R, with a few bits in Python.
+Code related to my HTHSCI 4R12 thesis project, related to r(t) estimation using epidemic timeseries using filtering methods. The majority of the project is written in R, with a few bits in Python. 
 
 (R package requirements):
 - data.table
@@ -25,3 +25,5 @@ The main output from running this should be main.pdf, which is a write-up of thi
 - Apply the rt_estimation_ci function from ts_utils/rt.R. You will have to specify the shift amount.
 
 See real_world_plots.R for an example.
+
+The maintainer of this project is Apeirogons (Matthew So, somatthewc@gmail.com). 
