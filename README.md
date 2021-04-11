@@ -15,7 +15,7 @@ Code related to my HTHSCI 4R12 thesis project, related to r(t) estimation using 
 
 Python package requirements are found in requirements.txt.
 
-To run, replace r in the Makefile with Rscript. Then, if running Linux, replace del /f main.pdf with rm main.pdf. If you are running Windows instead, install make through [Chocolatey](https://chocolatey.org/install).
+To run, replace r in the Makefile with Rscript. Then, if running Linux, replace del /f main.pdf with rm main.pdf. If you are running Windows instead, install make through [Chocolatey](https://chocolatey.org/install). You will also have to install PDFLateX from any TeX distribution.
 
 Then, clone this directory, navigate to it from command-line, and type: make.
 
