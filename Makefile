@@ -1,7 +1,9 @@
-target: main.pdf 
 
-#r = Rscript
-r = C:\Users\somat\Documents\R\R-4.0.2\bin\Rscript.exe
+current: main.pdf 
+
+r = Rscript
+-include local.mk
+## r = C:\Users\somat\Documents\R\R-4.0.2\bin\Rscript.exe
 
 logs/logs.out logs data:
 	mkdir logs
@@ -9,11 +11,10 @@ logs/logs.out logs data:
 	echo Logs folder created > logs/logs.out 
 
 logs/requirements.out: requirements.txt logs/logs.out
-	pip install -r $< > $@
+	pip3 install -r $< > $@
 
 logs/data_splitter.out: data_splitter.py logs/requirements.out
-	python $< > $@
-
+	python3 $< > $@
 
 #############################################################################################################3
 logs/seir.out seir : run_simulation.R ts_utils/deterministic_simulation.R base_params.R ggplot_params.R logs/logs.out
