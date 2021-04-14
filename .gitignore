@@ -10,3 +10,4 @@ data/*
 *.out
 *.gz
 Rplots.pdf
+local.mk
