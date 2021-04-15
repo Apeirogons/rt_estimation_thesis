@@ -1,7 +1,7 @@
 library('EpiEstim')
 library('zoo')
 
-rt_estimation_ci = function(incidence, ci_lower, ci_higher, n_resample = 50, level=0.95, shift_amt = 0, n=7){
+rt_estimation_ci = function(incidence, ci_lower, ci_higher, n_resample = 200, level=0.95, shift_amt = 0, n=7){
   stopifnot(length(incidence) == length(ci_lower))
   stopifnot(length(incidence) == length(ci_higher))
   stopifnot((n %% 2) == 1)
@@ -55,13 +55,15 @@ rt_estimation_ci = function(incidence, ci_lower, ci_higher, n_resample = 50, lev
   
   
   center = data.table::shift(center[,'mean'], shift_amt)
- # sampled_mean = apply(means, 1, function(x){quantile(x, 0.5, na.rm=TRUE)})
   
   L = 1-(1-level)/2
   lowers = apply(means, 1, function(x){quantile(x, 1-L, na.rm=TRUE)})
   uppers = apply(means, 1, function(x){quantile(x, L, na.rm=TRUE)})
+  sampled_mean = apply(means, 1, function(x){quantile(x, 0.5, na.rm=TRUE)})
   
-  df = data.frame(mean=center, lower=lowers, upper = uppers) #center
-   
+  center[is.na(lowers) || is.na(uppers)] = NA
+  
+  df = data.frame(mean=center, lower=lowers, upper = uppers, sampled_mean =sampled_mean) #center
+  
   return(df)  #center
 }

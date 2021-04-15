@@ -26,13 +26,15 @@ linear_filter = function(incidence, N=7, level=0.95){
   return(filtered)
 }
 
-linear_regression = function(incidence){
+linear_regression = function(incidence, tolerate_nan = 0){
 
   temp_df = data.frame(x=c(1:length(incidence)), y = incidence)
+  orig_length = nrow(temp_df)
+  
   temp_df = temp_df[!is.infinite(temp_df$y),]
   temp_df = temp_df[!is.na(temp_df$y),]
   
-  if(nrow(temp_df) == 0){
+  if(nrow(temp_df) <= orig_length*tolerate_nan){ # 0
     return (c(mean=NA, lower=NA, upper=NA))
   }
   model = lm(y ~ x, data=temp_df)

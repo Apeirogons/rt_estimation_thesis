@@ -42,9 +42,6 @@ plotter = function(df, save_loc, sim_title, width=10.4, height=6.15){
 # Create file path
 file_path = 'seir'
 dir.create(file.path(file_path), showWarnings = FALSE)
-file_path = 'figures'
-dir.create(file.path(file_path), showWarnings = FALSE)
-
 
 R0 = function(t){
   breakpoint_t = c(0, 100, 150, 300, 400, 99999999) 

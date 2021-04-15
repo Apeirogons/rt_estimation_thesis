@@ -8,7 +8,7 @@ library('zoo')
 
 # r(t) defined on the left side: that is, the change of incidence from one day to next (not from day before to that day)
 
-source('ts_utils/Rt.R')
+source('ts_utils/rt.R')
 source('ts_utils/process_utils.R')
 source('ts_utils/filter.R')
 
@@ -56,7 +56,10 @@ for (i in desired){
     
     plot = plot + geom_ribbon(data=ggplot_df, aes(x=X, ymin=rt_lower, ymax=rt_upper), alpha=0.3, inherit.aes = FALSE)
     
+    
+
     in_ci = Reduce('&', list((ggplot_df$rt_actual >= ggplot_df$rt_lower), (ggplot_df$rt_actual <= ggplot_df$rt_upper)))
+    print(paste('Rejecting ', toString(sum(is.na(in_ci))), ' NaNs', sep=''))
     in_ci = in_ci[!is.na(in_ci)]
     print(paste('Target: ', toString(i), ' Window length: ', toString(n)))
     print(sum(in_ci)/length(in_ci))

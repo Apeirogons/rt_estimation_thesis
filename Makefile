@@ -1,5 +1,5 @@
 
-target: main.pdf 
+current: main.pdf 
 
 r = Rscript
 -include local.mk
@@ -9,9 +9,10 @@ ifndef variable_i_can_override_from_shell
 variable_i_can_override_from_shell = value
 endif
 
-logs/logs.out logs data:
+logs/logs.out logs data figures:
 	mkdir logs
 	mkdir data
+	mkdir figures
 	echo Logs folder created > logs/logs.out 
 
 logs/requirements.out: requirements.txt logs/logs.out
