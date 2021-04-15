@@ -415,7 +415,7 @@ Note that other forms of regularization exist (for example, TM regularization), 
 \includegraphics[scale=0.4]{figures/deconv_vs_shiftsimple_observation_1.png}
 \caption{Comparison of deconvolution and shifting for reconstruction of true incidence of infection from filtered observation data.}
 \end{figure}
-Prior to deconvolution or shifting, a 7-day Savitzky-Golay filter was applied to the observation data. For this image, the stopping condition was $\chi^2 \leq 0.5$ and the regularization parameter $\alpha = 0.001$. Note that qualitatively, the deconvolution seems to amplify noise.
+Prior to deconvolution or shifting, a 7-day Savitzky-Golay filter was applied to the observation data. For this image, the regularization parameter was $\alpha = 0.001$ and 50 iterations of the deconvolution algorithm were applied. Note that qualitatively, the deconvolution seems to amplify noise.
 
 \clearpage
 \begin{figure}[h!]
@@ -442,7 +442,7 @@ Wiener deconvolution performs deconvolution in the Fourier domain (deconvolution
 
 \section{Appendix: $\nR(t)$ Estimation}
 \subsection{Rationale}
-The proposed model can be used to evaluate other epidemiological parameter estimation methods. $\nR(t)$ is the time-varying reproductive number, the mean number of infections each infectee will infect \cite{Gostic}. A common method of estimating the instantaneous $\nR(t)$ is the method proposed by Cori et al \cite{Cori}. However, it was initially hypothesized that filtering methods intended on reducing periodicity may improve Cori $\nR(t)$ estimation. 
+The proposed model can be used to evaluate other epidemiological parameter estimation methods. $\nR(t)$ is the time-varying reproductive number, the mean number of infections each infectee will infect \cite{Gostic}. A common method of estimating the instantaneous $\nR(t)$ is the method proposed by Cori et al \cite{Cori}, which will not be explained in detail in this work. However, it was initially hypothesized that filtering methods intended on reducing periodicity may improve Cori $\nR(t)$ estimation. 
 
 
 \subsection{Evaluation of the Cori method on simulated data}
@@ -465,22 +465,15 @@ The Cori method was used to estimate the instantaneous $\nR(t)$ of simulated dat
 Confidence intervals are the 95\% confidence intervals of the Cori method applied to raw observation data. 
 
 \subsection{Evaluation of \emph{Shifts}}
-One hypothesis proposed by Jonathan Dushoff was that the Wallinga-Teunis method, designed for cohort $\nR(t)$ estimation, could be naively applied to symptom onset data to estimate instantaneous $\nR(t)$ \cite{shifts}. Cohort $\nR(t)$ tracks the infectiousness of individuals infected on a particular day, instead of the instantaneous $\nR(t)$ which tracks overall infectiousness each day. In this model, the time delay to observation is nearly that of the time to become symptomatic (assuming infectiousness occurs at the same time as becoming symptomatic), therefore, this assumption is met.
+One hypothesis proposed by Jonathan Dushoff was that the Wallinga-Teunis method, designed for cohort $\nR(t)$ estimation, could be naively applied to symptom onset data to estimate instantaneous $\nR(t)$ \cite{shifts}. 
 
-\clearpage
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.4]{figures/wt_comparison_simple_observation_blocks.png}
-\caption{Comparison of \emph{shifts} and the Cori method applied to observation data and shifted backwards. The Cori method tracks sharp changes in the true instantaneous $\nR(t)$ much more effectively. The confidence interval shown is the \emph{shifts} 95\% confidence interval.} 
-\end{figure}
-
-Note: Given that the cohort $\nR(t)$ is equal to the instantaneous $\nR(t)$ backwards-convolved by the generation interval, the original hypothesis that no additional shifting is required may have been erroneous. For exponential infectious periods, the generation interval $=$ incubation period $+$ infectious period. Therefore, the cohort $\nR(t)$ would be shifted backwards by incubation period $+$ infectious period, while the symptomatic observations are shifted forwards by the incubation period - trailing the instantaneous $\nR(t)$ by the infectious period.
+Given that the case $\nR(t)$ is equal to the instantaneous $\nR(t)$ backwards-convolved by the generation interval, the generation interval $=$ incubation period $+$ infectious waiting time (which is equal to the infectious period for exponential infectious periods). Therefore, the case $\nR(t)$ would be shifted backwards by incubation period $+$ infectious period, while the symptomatic observations are shifted forwards by the incubation period - trailing the instantaneous $\nR(t)$ by the infectious period.
 
 \clearpage
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.4]{figures/wt_comparison_simple_observation_blocks_fair.png}
-\caption{Comparison of the \emph{shifts} method shifted forward by the mean infectious period, and the Cori method applied to observation data and shifted backwards. The Cori method still tracks sharp changes in the true instantaneous $\nR(t)$ much more effectively. The confidence interval shown is the \emph{shifts} 95\% confidence interval.} 
+\caption{Comparison of the \emph{shifts} method shifted forward by the mean infectious period, and the Cori method applied to observation data and shifted backwards. The Cori method tracks sharp changes in the true instantaneous $\nR(t)$ much more effectively. The confidence interval shown is the \emph{shifts} 95\% confidence interval.} 
 \end{figure}
 
 
