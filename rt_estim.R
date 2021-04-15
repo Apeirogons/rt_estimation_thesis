@@ -8,7 +8,7 @@ library('zoo')
 
 # r(t) defined on the left side: that is, the change of incidence from one day to next (not from day before to that day)
 
-source('ts_utils/rt.R')
+source('ts_utils/Rt.R')
 source('ts_utils/process_utils.R')
 source('ts_utils/filter.R')
 
