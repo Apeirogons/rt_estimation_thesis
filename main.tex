@@ -7,6 +7,7 @@
 \newcommand{\nR}{\mathcal{R}}
 \newcommand{\nr}{r}
 \newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\jd}[1]{[[\textsl{#1}]]}
 \overfullrule=0pt
 
 \title{A filtering approach to estimation of the epidemic exponential growth rate r(t) from incidence timeseries}
@@ -19,12 +20,14 @@
 \tableofcontents
 
 \section{Introduction}
-Outbreaks of infectious diseases such as the ongoing COVID-19 pandemic pose a threat to population health. In order to combat these outbreaks, it is important for public health authorities to understand how quickly an epidemic is spreading. One metric for studying epidemic spread is the exponential growth rate r(t). There currently exists few methods for estimating this metric using incidence data. We propose an estimation method that is conceptually simple,  easily implemented, and requires few priors on infection dynamics. This method involves filtering the raw observed incidence data with a Savitzky-Golay filter to remove periodicity and reduce noise, then using another Savitzky-Golay filter on the logarithm of the filtered incidence data to perform a logarithmic differentiation. This estimation method has been evaluated on a custom modified discrete-time SEIR model incorporating a separate periodic observation process resulting in a greater number of observations on certain days of the week. The proposed estimation method is effective at estimating r(t) in simulated data, even given periodic and noisy signals similar to those found in real-world data. Usage of this estimation method on real-world data results in qualitatively stable estimates. The proposed estimation method may make r(t) estimation quicker and more accurate, which may allow for better management of infectious disease outbreaks. Additionally, this modified SEIR model may generate timeseries more representative of real-world data, which can be used to improve other epidemiological parameter estimation methods that rely on incidence timeseries.
+Outbreaks of infectious diseases such as the ongoing COVID-19 pandemic pose a threat to population health. In order to combat these outbreaks, it is important for public health authorities to understand how quickly an epidemic is spreading. One metric for studying epidemic spread is the exponential growth rate r(t). \jd{Not exactly true. Maybe better to say something like methods have not been well studied:}
+There currently exist few methods for estimating this metric using incidence data. We propose an estimation method that is conceptually simple,  easily implemented, and requires few assumptions about infection dynamics. This method involves filtering the raw observed incidence data with a Savitzky-Golay filter to remove periodicity and reduce noise, then using another Savitzky-Golay filter on the logarithm of the filtered incidence data to perform logarithmic differentiation. This estimation method has been evaluated on a custom modified discrete-time SEIR model incorporating a separate periodic observation process resulting in a greater number of observations on certain days of the week. The proposed estimation method is effective at estimating r(t) in simulated data, even given periodic and noisy signals similar to those found in real-world data. Using this estimation method on real-world data results in qualitatively stable estimates. The proposed estimation method may make r(t) estimation quicker and more accurate, which could allow for better management of infectious disease outbreaks. Our modified SEIR model may also be useful for generating timeseries representative of real-world incidence data, which can be used to improve other epidemiological parameter estimation methods.
 
 \section{Modelling}
 
 \subsection{Rationale}
-In order to evaluate any potential r(t) estimation method, we must have a ground truth r(t); therefore, we need a model for which we can obtain a ground truth r(t) estimate. While a standard SEIR model might seem to be a good choice, it lacks some dynamical features that are found in real-world data, including noise and periodicity. Therefore, an SEIR-like model was developed which contained these dynamical features. 
+To evaluate a potential r(t) estimation method, we must have a ground truth r(t); therefore, we need a model for which we can obtain a ground truth r(t) estimate. While a standard SEIR model might seem to be a good choice, it lacks some dynamical features that are found in real-world data, including noise and periodicity. Therefore, an SEIR-like model was developed which contained these dynamical features. 
+\jd{I'm not going to have time to micro-edit; you can work on making your writing sharper, shorted and more direct.}
 
 \clearpage
 \begin{figure}[h!]
@@ -32,6 +35,7 @@ In order to evaluate any potential r(t) estimation method, we must have a ground
 \includegraphics[scale=0.4]{figures/real_dataviz.png}
 \caption{Real-world COVID-19 incidence data contains noise and "spiky" periodicity. \cite{OWID}}
 \end{figure}
+\jd{You can probably get better incidence data and avoid that weird anomaly. If I have time I'll send you a link.}
 
 
 It is hypothesized in this work that this "spikiness" primarily reflects daily changes in observations. Any trends in infection, such as changes in r(t), would be heavily smoothed by the incubation period; however, this is inconsistent with the consistent single-day spikes found in real data.
@@ -48,6 +52,7 @@ The sum of two probability distributions $X$ and $Y$ is denoted as $X+Y$, and is
 
 \subsubsection{State variable explanations}
 All state variables are initialized to 0 except $S \gets 10,000,000$. 
+\jd{It would be good to mention the initial value of incidence here -- and probably even better to just start with a non-zero value of $I$.}
 
 \begin{itemize}
     \item $S$: susceptible.
@@ -71,6 +76,7 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
     \item \code{observationProb}: The total probability that an infected individual will be observed. Set to 0.8.
     \item $t_{max}$: Maximal value of $t$ for simulation. Set to 401.
 \end{itemize}
+\jd{You should avoid writing words as math products. Use mathrm or something. This is probably not worth fixing for now unless you have extra time but I wanted to say it. Like do you \emph{not} think your tmax looks ugly?}
 
 \subsubsection{Derived variable explanations}
 \begin{itemize}
@@ -80,7 +86,7 @@ All state variables are initialized to 0 except $S \gets 10,000,000$.
 
 \subsection{Explanation of model logic}
 
-\subsubsection{Important assumptions}
+\subsubsection{Key assumptions}
 
 \begin{enumerate}
 	\item The infectious disease being modeled follows SEIR dynamics.
@@ -110,6 +116,7 @@ These steps are executed for each desired value of t between 0 and $t_{max}$.
     \item Transition event times are put into a separate list with each element at each index representing the number of events at (index) days from now. 
 
     \item Transition events are distributed amongst all future days with a value equal to their respective probability density functions. $E \rightarrow I$ events are proportional to \code{incubationDist}, $I \rightarrow R$ is proportional to \code{incubationDist + infectiousDist}, and $E \rightarrow I$ is proportional to the appropriate \linebreak \code{weekdayObservationDist} scaled by \code{obervationProb}.
+	 \jd{Unclear. You are using E-to-I to represent two different things it looks like (progression to infectiousness, and observation).}
 
     \item Execute all other transition events occurring today. For $S \rightarrow E, S=S-1, E=E+1$. For $E \rightarrow I, E=E-1, I=I+1$. For $I \rightarrow R, I = I-1, R = R+1$. For $E \rightarrow O$, compute $n_{obs}$, the number of $E \rightarrow O$ transitions that would happen today. Then, $O = O + negBinom(n_{obs}, \kappa)$.    
     
@@ -122,6 +129,8 @@ These steps are executed for each desired value of t between 0 and $t_{max}$.
     \item Compute \code{scaledIncidence} by multiplying \code{incidence} by \code{observationProb}.
     \item Compute the ground truth r(t) by taking the first differences of $log(\code{incidence})$. (The r(t) for a given day is equal to $log(t+1) - log(t)$). The ground truth is undefined for days on which $\code{incidence}=0$ or $t=t_{max}$. 
 \end{enumerate}
+\jd{It's good practice to say $\log(x)$ instead of $log(x)$.
+
 
 \section{r(t) Estimation}
 
@@ -129,6 +138,7 @@ These steps are executed for each desired value of t between 0 and $t_{max}$.
 	The Savitzky-Golay filter is a low-pass filter typically used for signal processing applications. The principle behind the Savitzky-Golay filter is that, for each time $t$, a polynomial regression model is fit from the points surrounding it \cite{SG}. For this work, three additional parameters are considered: window size, polynomial order, and derivative order. 
 	
 	For each time $t$, a polynomial regression model is fit using the incidence data from the times $[t-\code{windowWidth}, t+\code{windowWidth}]$, where $\code{windowWidth} = floor(\code{windowSize}/2)$. For this work, polynomial order is set to 1 for all filters (making each window a linear regression). Then, the value of the filter at each time $t$ is equal to the \code{derivativeOrder}th derivative of the best-fit polynomial at time $t$. For the left \code{windowWidth} points, the regression model is fit to the first \code{windowSize} points in the timeseries, and the value of the filter at each of the first \code{windowSize} points is equal to the regression model's prediction at each of these points. The analogous method is applied to the right \code{windowSize} points, using the last \code{windowWidth} points to train the regression model. 
+	\jd{The floor is imprecise (since not every windowSize is possible as written). Better to say $s=2w+1$.}
 
 	While confidence interval estimation for this filter is not standard in signal processing libraries, it can be done for derivative order 0 by taking the confidence interval on each predicted filter value \cite{SciPySG}. (Other combinations may also be possible; for example, for derivative order 1 and polynomial order 1 by taking the confidence interval on the slope of the linear regression.)
 
@@ -136,11 +146,13 @@ These steps are executed for each desired value of t between 0 and $t_{max}$.
 
 \begin{enumerate}
 	\item The observed incidence timeseries is filtered using a Savitzky-Golay filter of window size 7, polynomial order 1, and derivative order 0, saving both the mean value of the filter and the confidence interval at each point. This is intended as an initial low-pass filter on the incidence data, which acts to reduce periodicity and noise. (Note: There are other types of initial low-pass filters that could conceivably be used if confidence intervals are not important, see Appendix: Filtering for other possibilities).
+	\jd{You don't use the word `week' in this \P. Be more explanatory.}
 	
 	\item Define a function \code{estim(incidence, windowSize, shiftAmt)}.
 		\begin{enumerate}
 			\item $\code{logIncidence} \gets log(\code{incidence})$.
 			\item Filter \code{logIncidence} using a Savitzky-Golay filter of length \code{windowSize}, polynomial order 1, and derivative order 1. NaNs are ignored (not used as points in the linear regression). Only the mean estimate at each point needs to be considered.
+			\jd{The NaN thing should be explained and maybe changed. It's a bias, and you're going to say it's unimportant because we can't get decent estimates for those windows anyway -- so maybe just refuse to do estimates for those windows (return NA).}
 			\item Shift the resulting curve backwards by $\code{shiftAmt}$, which should be set to the rounded expected value of the time between infection and observation. 
 			\item Return the shifted curve, which is the mean r(t) estimate given the input incidence timeseries.
 		\end{enumerate}
@@ -254,6 +266,7 @@ Varying $\nR_0(t)$ was used to define model behavior. Once again, parameters wer
 
 \subsubsection{Smoothing and Estimation}
 
+\jd{Avoid this sort of repetition.}
 The first step in the estimation algorithm is an initial filtered of the incidence data to reduce noise and periodicity. See the r(t) estimation section for more details.
 
 \begin{figure}[h!]
@@ -310,8 +323,8 @@ While ground-truth r(t) values are unavailable for real-world data, this method 
 \end{figure}
 
 \section{Conclusion}
-This work details an r(t) estimation method based on Savitzky-Golay filtering that provides reasonable estimates of r(t) on simulated data, which also effectively quantifies uncertainty. This work also presents an SEIR-based model with more realistic dynamical features related to observation dynamics which can be useful for other parameter estimation tasks, such as $\nR(t)$ estimation. The proposed r(t) parameter estimation method may be useful in the management of pandemics, but also in other fields where the exponential growth rate must be estimated from timeseries data. 
-
+This work details an r(t) estimation method based on Savitzky-Golay filtering that provides reasonable estimates of r(t) on simulated data, which also effectively quantifies uncertainty. This work also presents an SEIR-based model with realistic dynamical features related to observation dynamics which can be useful for other parameter estimation tasks, such as $\nR(t)$ estimation. The proposed r(t) parameter estimation method may be useful in the management of pandemics, but also in other fields where the exponential growth rate must be estimated from timeseries data. 
+\jd{Avoid vague comparisons.}
 
 \subsection{Code availability and use-cases}
 The code for this project is primarily written in R, with some minor code for handling real-world data written in Python. This project can be found at https://github.com/Apeirogons/rt\_estimation\_thesis. Please follow the instructions in the README to replicate this project. Among other things, code from this project can be used to:
@@ -358,7 +371,7 @@ The discrete wavelet transform converts a timeseries into the wavelet domain, fo
 
 
 \subsection{Butterworth low-pass filter}
-Similarly to the wavelet transform, the Fourier transform converts a timeseries to the frequency domain. One can set all frequencies above a threshold to zero to perform filtering \cite{butterworth}. However, this suffers the unique issue of not being very accurate at the end of the timeseries, and has therefore been largely ignored for the rest of the project. The following filter is a Butterworth filter of order 5 and critical frequency of 0.1.
+Like the wavelet transform, the Fourier transform converts a timeseries to the frequency domain. One can set all frequencies above a threshold to zero to perform filtering \cite{butterworth}. However, this suffers the unique issue of not being very accurate at the end of the timeseries, and has therefore been largely ignored for the rest of the project. The following filter is a Butterworth filter of order 5 and critical frequency of 0.1.
 
 \clearpage
 \begin{figure}[h!]
@@ -442,6 +455,7 @@ Wiener deconvolution performs deconvolution in the Fourier domain (deconvolution
 
 \section{Appendix: $\nR(t)$ Estimation}
 \subsection{Rationale}
+\jd{Not clear what you mean by the proposed model here; the simulation model?}
 The proposed model can be used to evaluate other epidemiological parameter estimation methods. $\nR(t)$ is the time-varying reproductive number, the mean number of infections each infectee will infect \cite{Gostic}. A common method of estimating the instantaneous $\nR(t)$ is the method proposed by Cori et al \cite{Cori}. However, it was initially hypothesized that filtering methods intended on reducing periodicity may improve Cori $\nR(t)$ estimation. 
 
 
