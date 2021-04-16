@@ -1,25 +1,27 @@
 
 current: main.pdf 
 
+# If these commands don't work (for example, this can happen if you install Python 3 from Anaconda), create a local.mk overwriting these commands.
 r = Rscript
--include local.mk
-## r = C:\Users\somat\Documents\R\R-4.0.2\bin\Rscript.exe
+p = python3
 
-ifndef variable_i_can_override_from_shell
-variable_i_can_override_from_shell = value
-endif
+# One example local.mk (mine):
+# r = C:\Users\somat\Documents\R\R-4.0.2\bin\Rscript.exe
+# p = python
+
+-include local.mk
 
 logs/logs.out logs data figures:
-	mkdir logs
-	mkdir data
-	mkdir figures
+	mkdir -p logs
+	mkdir -p data
+	mkdir -p figures
 	echo Logs folder created > logs/logs.out 
 
 logs/requirements.out: requirements.txt logs/logs.out
 	pip3 install -r $< > $@
 
 logs/data_splitter.out: data_splitter.py logs/requirements.out
-	python3 $< > $@
+	$p $< > $@
 
 #############################################################################################################3
 logs/seir.out seir : run_simulation.R ts_utils/deterministic_simulation.R base_params.R ggplot_params.R logs/logs.out

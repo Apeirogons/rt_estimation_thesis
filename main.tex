@@ -4,12 +4,23 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{mathrsfs}
+
+\usepackage{xcolor}
 \newcommand{\nR}{\mathcal{R}}
 \newcommand{\nr}{r}
-
 \newcommand{\code}[1]{\texttt{#1}} 
-\newcommand{\jd}[1]{[[\textsl{#1}]]} %}
-\newcommand{\msComment}[1]{[[\textsl{#1}]]}
+
+
+\newif\iflong
+\longfalse
+
+\iflong 
+	\newcommand{\jd}[1]{[[\textcolor{red}{#1}]]}  \newcommand{\msComment}[1]{[[\textcolor{blue}{#1}]]}
+
+\else 
+	\newcommand{\jd}[1]{} \newcommand{\msComment}[1]{}
+\fi
+
 \overfullrule=0pt
 
 \title{A filtering approach to estimation of the epidemic exponential growth rate r(t) from incidence timeseries}
@@ -103,7 +114,7 @@ All state variables are initialized to 0 except $S \gets 10,000,000$. On day 0, 
 \begin{enumerate}
     \item Compute an observation distribution for every day in the week. For each weekday, modify a copy of \code{baseObservationDist} such that each weekday in the distribution is multiplied by the corresponding item in dayScalers. Then, renormalize this distribution to have a sum of 1.
     
-    \item Set values for each state variable. Set $N \gets \mathrm{sum}(S, E, I, R)$. Additionally, set $t \gets -1$ for setup purposes.
+    \item Set values for each state variable. Set $N \gets \mathrm{sum}(S, E, I, R)$. 
 
 \end{enumerate}
 
