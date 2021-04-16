@@ -102,7 +102,7 @@ longdat <- (mergedat
             %>% select(date=Date, other_est, N501Y_est, newConfirmations)
             %>% pivot_longer(cols=!date, names_to="type", values_to="count")
 )
-
+write.csv(ddclean, 'data/mli_canadian.csv')
 write.csv(longdat, 'data/mli_on_variants.csv')
 
 

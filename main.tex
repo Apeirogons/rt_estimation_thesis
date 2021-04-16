@@ -46,9 +46,9 @@ We need to obtain a ground-truth r(t) estimate before evaluating a potential r(t
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.4]{figures/real_dataviz.png}
-\caption{Real-world COVID-19 incidence data contains noise and "spiky" periodicity. \cite{OWID}}
+\caption{Real-world Canadian COVID-19 incidence data contains noise and "spiky" periodicity. \cite{mli}}
 \end{figure}
-\jd{You can probably get better incidence data and avoid that weird anomaly. If I have time I'll send you a link.} \msComment{I can change Canada to a different country that doesn't have this anomaly? Otherwise, I await the link to the different data source.}
+\jd{You can probably get better incidence data and avoid that weird anomaly. If I have time I'll send you a link.} \msComment{I just switched the figure for a Canadian one.}
 
 
 It is hypothesized in this work that this "spikiness" primarily reflects daily changes in observations. Any trends in infection, such as changes in r(t), would be heavily smoothed by the incubation period; however, this is inconsistent with the consistent single-day spikes found in real data.
@@ -514,6 +514,10 @@ Given that the case $\nR(t)$ is equal to the instantaneous $\nR(t)$ backwards-co
 \bibitem{OWID}
 Roser, M., Ritchie, H., Ortiz-Ospina, E., \& Hasell, J. (2020). Coronavirus Pandemic (COVID-19). OurWorldInData.org. Retrieved 24 February 2021, from https://ourworldindata.org/coronavirus.
 
+\bibitem{mli}
+Li, M. (2021). COVID19-Canada. github.com. Retrieved 10 March 2021, from https://wzmli.github.io/COVID19-Canada/.
+
+
 \bibitem{McAloon}
 McAloon, C., Collins, Á., Hunt, K., Barber, A., Byrne, A., \& Butler, F. et al. (2020). Incubation period of COVID-19: a rapid systematic review and meta-analysis of observational research. BMJ Open, 10(8), e039652. https://doi.org/10.1136/bmjopen-2020-039652
 
@@ -535,9 +539,6 @@ Gostic, K., McGough, L., Baskerville, E., Abbott, S., Joshi, K., \& Tedijanto, C
 
 \bibitem{RLLoss}
 Dey, N., Blanc-Féraud, L., Zimmer, C., Roux, P., Kam, Z., Olivo-Marin, J., \& Zerubia, J. (2004). 3D Microscopy Deconvolution using Richardson-Lucy Algorithm with Total Variation Regularization. INRIA. Retrieved from https://hal.inria.fr/inria-00070726/document
-
-\bibitem{mli}
-Li, M. (2021). COVID19-Canada. github.com. Retrieved 10 March 2021, from https://wzmli.github.io/COVID19-Canada/.
 
 %Appendix: Filtering
 \bibitem{wavelets}

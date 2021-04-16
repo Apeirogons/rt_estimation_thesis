@@ -42,7 +42,7 @@ logs/variants_mli.out: variants_mli.R
 logs/variants_plots.out: variants_plots.R logs/variants_mli.out 
 	$r $< > $@
 
-logs/real_world_viz.out: real_world_viz.R logs/data_splitter.out 
+logs/real_world_viz.out: real_world_viz.R logs/data_splitter.out logs/variants_mli.out
 	$r $< > $@
 
 logs/real_world_plots.out: real_world_plots.R logs/data_splitter.out 
