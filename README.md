@@ -15,11 +15,15 @@ Code related to my HTHSCI 4R12 thesis project, related to r(t) estimation using 
 - reticulate
 - signal
 
-Python package requirements are found in requirements.txt.
+More requirements: 
+- The project is tested on Windows 10. It requires a make installation through [Chocolatey](https://chocolatey.org/install).
+- Python package requirements are found in requirements.txt. Python 3 is required.
+- PDFLatex from any TEX distribution is required.
+- The Rscript and python commands may not be the same for everyone, depending on the system. Create a file local.mk to fix this (an example exists commented-out in the Makefile.
+- Some of the Makefile will have to be changed if using Linux instead, due to Windows-specific commands. Some potential fixes exist in the Makefile, but they are untested.
 
-To run, replace r in the Makefile with Rscript. Then, if running Linux, replace del /f main.pdf with rm main.pdf. If you are running Windows instead, install make through [Chocolatey](https://chocolatey.org/install). You will also have to install PDFLateX from any TeX distribution.
 
-Then, clone this directory, navigate to it from command-line, and type: make.
+Clone this directory, navigate to it from command-line, and build it with: make
 
 The main output from running this should be main.pdf, which is a write-up of this project. However, should you wish to use this code to perform r(t) estimation on other incidence data (or any data for which you would like to know the exponential growth rate), you must perform the following steps:
 

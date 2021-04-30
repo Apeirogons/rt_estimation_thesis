@@ -1,4 +1,3 @@
-
 current: main.pdf 
 
 # If these commands don't work (for example, this can happen if you install Python 3 from Anaconda), create a local.mk overwriting these commands.
@@ -12,9 +11,14 @@ p = python3
 -include local.mk
 
 logs/logs.out logs data figures:
-	mkdir -p logs
-	mkdir -p data
-	mkdir -p figures
+	if not exist logs mkdir logs 
+	if not exist data mkdir data 
+	if not exist figures mkdir figures
+
+# LINUX: Untested
+#	mkdir -p logs
+#	mkdir -p data
+#	mkdir -p figures
 	echo Logs folder created > logs/logs.out 
 
 logs/requirements.out: requirements.txt logs/logs.out
@@ -59,6 +63,11 @@ logs/wt_estim.out: wt_estim.R ts_utils/cori_wallinga.R logs/seir.out
 
 main.pdf: main.tex logs/smoothing_figures.out logs/seir.out logs/rt_estim.out logs/variants_plots.out logs/real_world_viz.out logs/real_world_plots.out logs/rt_estim_deconv.out logs/smoothing_figures_extra.out logs/cori_estim.out logs/wt_estim.out
 	del /f main.pdf
+# LINUX: Untested
+#	rm main.pdf
+# 3 PDFLatex looks odd, but exists because LaTeX doesn't do citations, etc. on first pass.
+# See this stack overflow for details. https://tex.stackexchange.com/questions/53235/why-does-latex-bibtex-need-three-passes-to-clear-up-all-warnings
 	pdflatex $< 
-
+	pdflatex $< 
+	pdflatex $< 
 ######################################################################
