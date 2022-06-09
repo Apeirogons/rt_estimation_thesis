@@ -32,4 +32,4 @@ The main output from running this should be main.pdf, which is a write-up of thi
 
 See real_world_plots.R for an example.
 
-The maintainer of this project is Apeirogons (Matthew So, somatthewc@gmail.com). 
+The maintainer of this project is matthewcso (Matthew So, somatthewc@gmail.com). 
